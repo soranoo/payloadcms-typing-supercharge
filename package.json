@@ -1,0 +1,41 @@
+{
+  "name": "payloadcms-typing-supercharge",
+  "version": "1.0.0",
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/soranoo/payloadcms-typing-supercharge.git"
+  },
+  "author": "soranoo (Freeman)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/soranoo/payloadcms-typing-supercharge/issues"
+  },
+  "homepage": "https://github.com/soranoo/payloadcms-typing-supercharge#readme",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "npm run clean && tsc"
+  },
+  "keywords": [
+    "payloadcms",
+    "typescript"
+  ],
+  "peerDependencies": {
+    "payload": "^3.0.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^11.0.2",
+    "@semantic-release/npm": "^12.0.1",
+    "rimraf": "^5.0.0",
+    "semantic-release": "^24.2.4",
+    "tsc": "^2.0.4",
+    "typescript": "^5.8.3"
+  }
+}
