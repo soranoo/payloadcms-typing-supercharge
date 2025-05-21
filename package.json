@@ -13,10 +13,13 @@
   },
   "homepage": "https://github.com/soranoo/payloadcms-typing-supercharge#readme",
   "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "files": [
-    "dist"
+  "types": "dist/index.d.ts",  "files": [
+    "dist",
+    "bin"
   ],
+  "bin": {
+    "copy-payload-types": "./dist/bin/copy-dist.js"
+  },
   "scripts": {
     "clean": "rimraf dist",
     "build": "npm run clean && tsc"
