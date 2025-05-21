@@ -16,7 +16,7 @@ import type { MaxDepth, ObjectPaths } from "./object-path";
  * type User = {
  * 	name: string;
  *  age: number;
- *  profile: Profile;
+ *  profile: Profile[];
  * };
  *
  * const query: Where<User, 1> = {
@@ -29,6 +29,8 @@ import type { MaxDepth, ObjectPaths } from "./object-path";
  *  "profile.subProfile.bio": { // Error: depth limit exceeded
  * 		equals: "Loves coding",
  * 	},
+ * }
+ * ```
  */
 // TODO: Fix the "Type instantiation is excessively deep and possibly infinite.ts(2589)"
 // @ts-expect-error - Pending fix

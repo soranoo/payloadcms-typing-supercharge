@@ -22,13 +22,16 @@ export type ObjectPaths<
 	P extends string = "",
 > = T extends object
 	? {
-			[K in keyof T & (string | number)]: // immediate key
+			[K in keyof T & (string | number)]:
 				| `${P}${K}`
-				// recurse only if D > 0 into non-string objects
-				| (D extends 0
+				| (
+					D extends 0
 						? never
-						: Exclude<T[K], string> extends object
-							? ObjectPaths<Exclude<T[K], string>, Prev<D>, `${P}${K}.`>
-							: never);
+						: Exclude<T[K], string> extends Array<infer U>
+							? ObjectPaths<Exclude<U, string>, Prev<D>, `${P}${K}.`>
+							: Exclude<T[K], string> extends object
+								? ObjectPaths<Exclude<T[K], string>, Prev<D>, `${P}${K}.`>
+								: never
+				);
 		}[keyof T & (string | number)]
 	: never;
