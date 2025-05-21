@@ -29,14 +29,16 @@ export interface TypedCreateOptions<
 	TSlug extends CollectionSlug,
 	TSelect extends SelectFromCollectionSlug<TSlug>,
 	TDepth extends number,
-> extends Omit<CreateOptions<TSlug, TSelect>, "depth"> {
+> extends Omit<CreateOptions<TSlug, TSelect>, "collection" | "depth"> {
 	depth?: TDepth;
+	collection?: TSlug;
 }
 
 export interface TypedCountOptions<
 	TSlug extends CollectionSlug,
 	TSelect extends SelectFromCollectionSlug<TSlug>,
-> extends Omit<CountOptions<TSlug>, "where"> {
+> extends Omit<CountOptions<TSlug>, "collection" | "where"> {
+	collection?: TSlug;
 	where?: Where<TransformCollectionWithSelect<TSlug, TSelect>>;
 }
 
@@ -44,7 +46,8 @@ export interface TypedFindOptions<
 	TSlug extends CollectionSlug,
 	TSelect extends SelectFromCollectionSlug<TSlug>,
 	TDepth extends number,
-> extends Omit<FindOptions<TSlug, TSelect>, "where" | "sort" | "depth"> {
+> extends Omit<FindOptions<TSlug, TSelect>, "collection" | "where" | "sort" | "depth"> {
+	collection?: TSlug;
 	where?: Where<TransformCollectionWithSelect<TSlug, TSelect>, TDepth>;
 	sort?: Sort<TransformCollectionWithSelect<TSlug, TSelect>, TDepth>;
 	depth?: TDepth;
@@ -55,7 +58,8 @@ export interface TypedFindByIDOptions<
 	TDisableErrors extends boolean,
 	TSelect extends SelectFromCollectionSlug<TSlug>,
 	TDepth extends number,
-> extends Omit<FindByIDOptions<TSlug, TDisableErrors, TSelect>, "depth"> {
+> extends Omit<FindByIDOptions<TSlug, TDisableErrors, TSelect>, "collection" | "depth"> {
+	collection?: TSlug;
 	depth?: TDepth;
 }
 
@@ -63,7 +67,8 @@ export interface TypedUpdateManyOptions<
 	TSlug extends CollectionSlug,
 	TSelect extends SelectFromCollectionSlug<TSlug>,
 	TDepth extends number,
-> extends Omit<UpdateManyOptions<TSlug, TSelect>, "where" | "depth"> {
+> extends Omit<UpdateManyOptions<TSlug, TSelect>, "collection" | "where" | "depth"> {
+	collection?: TSlug;
 	where?: Where<TransformCollectionWithSelect<TSlug, TSelect>, TDepth>;
 	depth?: TDepth;
 }
@@ -72,7 +77,8 @@ export interface TypedDeleteManyOptions<
 	TSlug extends CollectionSlug,
 	TSelect extends SelectFromCollectionSlug<TSlug>,
 	TDepth extends number,
-> extends Omit<DeleteManyOptions<TSlug, TSelect>, "where" | "depth"> {
+> extends Omit<DeleteManyOptions<TSlug, TSelect>, "collection" | "where" | "depth"> {
+	collection?: TSlug;
 	where?: Where<TransformCollectionWithSelect<TSlug, TSelect>, TDepth>;
 	depth?: TDepth;
 }
