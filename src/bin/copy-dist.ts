@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import { cp, mkdir } from "node:fs/promises";
-import path from "node:path";
+const { cp, mkdir } = require("node:fs/promises");
+const { dirname, join, resolve } = require("node:path");
 
 async function copyDist() {
   try {
@@ -15,10 +15,10 @@ async function copyDist() {
 
     // Resolve paths relative to project root
     const projectRoot = process.cwd();
-    const distPath = path.join(__dirname, "../../dist");
-    const targetPath = path.resolve(projectRoot, targetDir);
+    const distPath = join(__dirname, "../../dist");
+    const targetPath = resolve(projectRoot, targetDir);
 
-    // Create target directory if it doesn"t exist
+    // Create target directory if it doesn't exist
     await mkdir(targetPath, { recursive: true });
 
     // Copy the dist directory recursively to the target location
