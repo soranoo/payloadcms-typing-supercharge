@@ -52,9 +52,9 @@ export interface TypedFindOptions<
 
 export interface TypedFindByIDOptions<
 	TSlug extends CollectionSlug,
+	TDisableErrors extends boolean,
 	TSelect extends SelectFromCollectionSlug<TSlug>,
 	TDepth extends number,
-	// @ts-expect-error - Type 'TSelect' does not satisfy the constraint 'SelectType'.
 > extends Omit<FindByIDOptions<TSlug, TDisableErrors, TSelect>, "depth"> {
 	depth?: TDepth;
 }

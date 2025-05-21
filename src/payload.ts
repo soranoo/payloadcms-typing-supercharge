@@ -100,7 +100,7 @@ export class TypedPayload {
 	>({
 		depth = 1 as TDepth,
 		...options
-	}: TypedFindByIDOptions<TSlug, TSelect, TDepth>): Promise<
+	}: TypedFindByIDOptions<TSlug, TDisableErrors, TSelect, TDepth>): Promise<
 		ApplyDisableErrors<
 			TypedTransformCollectionWithSelect<TSlug, TSelect, TDepth>,
 			TDisableErrors
