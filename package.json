@@ -1,6 +1,6 @@
 {
   "name": "payloadcms-typing-supercharge",
-  "description": "",
+  "description": "This package provides strongly typed PayloadCMS types, enhancing the type safety and validation of your PayloadCMS queries and operations. It allows you to perform type-safe selections, where clauses, sort operations, and CRUD operations with strong type inference.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/soranoo/payloadcms-typing-supercharge.git"
