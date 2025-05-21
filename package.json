@@ -18,7 +18,7 @@
     "bin"
   ],
   "bin": {
-    "copy-payload-types": "./dist/bin/copy-dist.js"
+    "copy-payloadcms-typing-supercharge": "./dist/bin/copy-dist.js"
   },
   "scripts": {
     "clean": "rimraf dist",
