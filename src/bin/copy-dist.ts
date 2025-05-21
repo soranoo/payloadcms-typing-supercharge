@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+// ! Make sure written in CommonJS
+
 const { cp, mkdir } = require("node:fs/promises");
 const { dirname, join, resolve } = require("node:path");
 
