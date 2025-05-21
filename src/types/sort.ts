@@ -1,3 +1,4 @@
+import type { NonNullableObject } from "./non-nullable-object";
 import type { MaxDepth, ObjectPaths } from "./object-path";
 
 /**
@@ -29,9 +30,9 @@ import type { MaxDepth, ObjectPaths } from "./object-path";
  * const sort3: Sort<User> = ["name", "-profile.age"];
  */
 export type Sort<Obj, D extends number = MaxDepth> =
-	| ObjectPaths<Obj, D>
+	| ObjectPaths<NonNullableObject<Obj>, D>
 	// TODO: Fix: Type instantiation is excessively deep and possibly infinite.ts(2589)
 	// @ts-expect-error - Pending fix
-	| `-${ObjectPaths<Obj, D>}`
-	| ObjectPaths<Obj, D>[]
-	| `-${ObjectPaths<Obj, D>}`[];
+	| `-${ObjectPaths<NonNullableObject<Obj>, D>}`
+	| ObjectPaths<NonNullableObject<Obj>, D>[]
+	| `-${ObjectPaths<NonNullableObject<Obj>, D>}`[];

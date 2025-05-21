@@ -1,5 +1,6 @@
 import type { WhereField } from "payload";
 import type { MaxDepth, ObjectPaths } from "./object-path";
+import type { NonNullableObject } from "./non-nullable-object";
 
 /**
  * Where<Obj, D> is a utility type that builds a query structure for filtering objects of type `Obj` to a specified depth `D`.
@@ -35,7 +36,7 @@ import type { MaxDepth, ObjectPaths } from "./object-path";
 // TODO: Fix the "Type instantiation is excessively deep and possibly infinite.ts(2589)"
 // @ts-expect-error - Pending fix
 export type Where<Obj, D extends number = MaxDepth> = {
-	[P in ObjectPaths<Obj, D>]?: WhereField;
+	[P in ObjectPaths<NonNullableObject<Obj>, D>]?: WhereField;
 } & {
 	and?: Where<Obj, D>[];
 	or?: Where<Obj, D>[];
