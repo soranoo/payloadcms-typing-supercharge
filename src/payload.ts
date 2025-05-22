@@ -43,12 +43,13 @@ export class TypedPayload {
 		TDepth extends number = 1,
 	>({
 		depth = 1 as TDepth,
+		collection,
 		...options
 	}: TypedCreateOptions<TSlug, TSelect, TDepth>): Promise<
 		TypedTransformCollectionWithSelect<TSlug, TSelect, TDepth>
 	> {
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-		return (await this.payload.create({ depth, ...options })) as any;
+		return (await this.payload.create({ depth, collection, ...options })) as any;
 	}
 
 	/**
@@ -59,8 +60,11 @@ export class TypedPayload {
 	async count<
 		TSlug extends CollectionSlug,
 		TSelect extends SelectFromCollectionSlug<TSlug>,
-	>(options: TypedCountOptions<TSlug, TSelect>): ReturnType<Payload["count"]> {
-		return await this.payload.count(options);
+	>({
+		collection,
+		...options
+	}: TypedCountOptions<TSlug, TSelect>): ReturnType<Payload["count"]> {
+		return await this.payload.count({ collection, ...options });
 	}
 
 	/**
@@ -74,6 +78,7 @@ export class TypedPayload {
 		TDepth extends number = 1,
 	>({
 		depth = 1 as TDepth,
+		collection,
 		...options
 	}: TypedFindOptions<TSlug, TSelect, TDepth>): Promise<
 		PaginatedDocs<
@@ -83,6 +88,7 @@ export class TypedPayload {
 		// @ts-expect-error - ignore default type error because of "where"
 		return await this.payload.find({
 			depth,
+			collection,
 			...options,
 		});
 	}
@@ -99,6 +105,7 @@ export class TypedPayload {
 		TDepth extends number = 1,
 	>({
 		depth = 1 as TDepth,
+		collection,
 		...options
 	}: TypedFindByIDOptions<TSlug, TDisableErrors, TSelect, TDepth>): Promise<
 		ApplyDisableErrors<
@@ -108,6 +115,7 @@ export class TypedPayload {
 	> {
 		return (await this.payload.findByID({
 			depth,
+			collection,
 			...options,
 			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		})) as any;
@@ -145,11 +153,12 @@ export class TypedPayload {
 		TDepth extends number = 1,
 	>({
 		depth = 1 as TDepth,
+		collection,
 		...options
 	}: (TypedUpdateManyOptions<TSlug, TSelect, TDepth> | UpdateByIDOptions<TSlug, TSelect>)) {
 		// @ts-expect-error - ignore default type error because of "where"
 		// biome-ignore lint/suspicious/noExplicitAny: ignore default typing
-		return await this.payload.update({ depth, ...options }) as any;
+		return await this.payload.update({ depth, collection, ...options }) as any;
 	}
 
 	/**
@@ -179,10 +188,11 @@ export class TypedPayload {
 		TDepth extends number = 1,
 	>({
 		depth = 1 as TDepth,
+		collection,
 		...options
 	}: (TypedDeleteManyOptions<TSlug, TSelect, TDepth> | DeleteByIDOptions<TSlug, TSelect>)) {
 		// @ts-expect-error - ignore default type error because of "where"
 		// biome-ignore lint/suspicious/noExplicitAny: ignore default typing
-		return await this.payload.delete({ depth, ...options }) as any;
+		return await this.payload.delete({ depth, collection, ...options }) as any;
 	}
 }
