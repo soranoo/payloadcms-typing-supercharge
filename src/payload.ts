@@ -47,7 +47,6 @@ export class TypedPayload {
 	}: TypedCreateOptions<TSlug, TSelect, TDepth>): Promise<
 		TypedTransformCollectionWithSelect<TSlug, TSelect, TDepth>
 	> {
-		// @ts-expect-error - ignore default type error because of "collection"
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		return (await this.payload.create({ depth, ...options })) as any;
 	}
@@ -61,7 +60,6 @@ export class TypedPayload {
 		TSlug extends CollectionSlug,
 		TSelect extends SelectFromCollectionSlug<TSlug>,
 	>(options: TypedCountOptions<TSlug, TSelect>): ReturnType<Payload["count"]> {
-		// @ts-expect-error - ignore default type error because of "collection"
 		return await this.payload.count(options);
 	}
 
@@ -108,7 +106,6 @@ export class TypedPayload {
 			TDisableErrors
 		>
 	> {
-		// @ts-expect-error - ignore default type error because of "collection"
 		return (await this.payload.findByID({
 			depth,
 			...options,
