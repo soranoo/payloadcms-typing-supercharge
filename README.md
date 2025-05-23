@@ -30,6 +30,12 @@ PayloadCMS is a great headless CMS, but its default types can be enhanced to pro
   - `update` (byID and Bulk)
   - `delete` (byID and Bulk)
 
+> [!CAUTION]\
+> ALL operations under `TypedPayload` are rootless by default, meaning `overrideAccess = false`.
+
+> [!NOTE]\
+> If you wanna to use root access by default, you can set `overrideAccess = true` in the constructor of `TypedPayload` class. eg. `const typedPayload = new TypedPayload(payload, { overrideAccess: true });`
+
 ## 📦 Requirements
 
 - PayloadCMS >= 3.0.0

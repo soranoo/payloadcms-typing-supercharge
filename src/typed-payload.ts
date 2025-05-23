@@ -26,15 +26,22 @@ import type {
 } from "./types/typeds";
 
 export class TypedPayload {
-	constructor(public readonly payload: BasePayload) { }
+	constructor(
+		public readonly payload: BasePayload,
+		public overrideAccess = false,
+	) { }
 
 	/**
 	 * @description Create a typed payload instance
 	 * @param payload - payload instance
+	 * @param options - options
+	 * @param options.overrideAccess - whether to override access, defaults to false
 	 * @returns typed payload instance
 	 */
-	static createTypedPayload(payload: BasePayload): TypedPayload {
-		return new TypedPayload(payload);
+	static createTypedPayload(payload: BasePayload, options: {
+		overrideAccess?: boolean;
+	} = { overrideAccess: false }): TypedPayload {
+		return new TypedPayload(payload, options.overrideAccess);
 	}
 
 	/**
@@ -47,14 +54,15 @@ export class TypedPayload {
 		TSelect extends SelectFromCollectionSlug<TSlug>,
 		TDepth extends number = 1,
 	>({
-		depth = 1 as TDepth,
 		collection,
+		depth = 1 as TDepth,
+		overrideAccess = this.overrideAccess,
 		...options
 	}: TypedCreateOptions<TSlug, TSelect, TDepth>): Promise<
 		TypedTransformCollectionWithSelect<TSlug, TSelect, TDepth>
 	> {
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-		return (await this.payload.create({ depth, collection, ...options })) as any;
+		return (await this.payload.create({ depth, collection, overrideAccess, ...options })) as any;
 	}
 
 	/**
@@ -67,9 +75,10 @@ export class TypedPayload {
 		TSelect extends SelectFromCollectionSlug<TSlug>,
 	>({
 		collection,
+		overrideAccess = this.overrideAccess,
 		...options
 	}: TypedCountOptions<TSlug, TSelect>): ReturnType<Payload["count"]> {
-		return await this.payload.count({ collection, ...options });
+		return await this.payload.count({ collection, overrideAccess, ...options });
 	}
 
 	/**
@@ -82,8 +91,9 @@ export class TypedPayload {
 		TSelect extends SelectFromCollectionSlug<TSlug>,
 		TDepth extends number = 1,
 	>({
-		depth = 1 as TDepth,
 		collection,
+		depth = 1 as TDepth,
+		overrideAccess = this.overrideAccess,
 		...options
 	}: TypedFindOptions<TSlug, TSelect, TDepth>): Promise<
 		PaginatedDocs<
@@ -94,6 +104,7 @@ export class TypedPayload {
 		return await this.payload.find({
 			depth,
 			collection,
+			overrideAccess,
 			...options,
 		});
 	}
@@ -109,8 +120,9 @@ export class TypedPayload {
 		TSelect extends SelectFromCollectionSlug<TSlug>,
 		TDepth extends number = 1,
 	>({
-		depth = 1 as TDepth,
 		collection,
+		overrideAccess = this.overrideAccess,
+		depth = 1 as TDepth,
 		...options
 	}: TypedFindByIDOptions<TSlug, TDisableErrors, TSelect, TDepth>): Promise<
 		ApplyDisableErrors<
@@ -121,6 +133,7 @@ export class TypedPayload {
 		return (await this.payload.findByID({
 			depth,
 			collection,
+			overrideAccess,
 			...options,
 			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		})) as any;
@@ -157,13 +170,14 @@ export class TypedPayload {
 		TSelect extends SelectFromCollectionSlug<TSlug>,
 		TDepth extends number = 1,
 	>({
-		depth = 1 as TDepth,
 		collection,
+		overrideAccess = this.overrideAccess,
+		depth = 1 as TDepth,
 		...options
 	}: (TypedUpdateManyOptions<TSlug, TSelect, TDepth> | UpdateByIDOptions<TSlug, TSelect>)) {
 		// @ts-expect-error - ignore default type error because of "where"
 		// biome-ignore lint/suspicious/noExplicitAny: ignore default typing
-		return await this.payload.update({ depth, collection, ...options }) as any;
+		return await this.payload.update({ depth, collection, overrideAccess, ...options }) as any;
 	}
 
 	/**
@@ -192,12 +206,13 @@ export class TypedPayload {
 		TSelect extends SelectFromCollectionSlug<TSlug>,
 		TDepth extends number = 1,
 	>({
-		depth = 1 as TDepth,
 		collection,
+		overrideAccess = this.overrideAccess,
+		depth = 1 as TDepth,
 		...options
 	}: (TypedDeleteManyOptions<TSlug, TSelect, TDepth> | DeleteByIDOptions<TSlug, TSelect>)) {
 		// @ts-expect-error - ignore default type error because of "where"
 		// biome-ignore lint/suspicious/noExplicitAny: ignore default typing
-		return await this.payload.delete({ depth, collection, ...options }) as any;
+		return await this.payload.delete({ depth, collection, overrideAccess, ...options }) as any;
 	}
 }
