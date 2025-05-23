@@ -11,10 +11,10 @@
     "url": "https://github.com/soranoo/payloadcms-typing-supercharge/issues"
   },
   "homepage": "https://github.com/soranoo/payloadcms-typing-supercharge#readme",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "src",
   "files": [
-    "dist"
+    "dist",
+    "src"
   ],
   "bin": {
     "copy-payloadcms-typing-supercharge": "./dist/bin/copy-dist.js"
