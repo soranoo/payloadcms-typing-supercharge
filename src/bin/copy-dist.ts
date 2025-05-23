@@ -11,13 +11,13 @@ async function copyDist() {
 
     if (!targetDir) {
       console.error("Please specify a target directory");
-      console.error("Usage: copy-payload-types <target-directory>");
+      console.error("Usage: copy-payloadcms-typing-supercharge <target-directory>");
       process.exit(1);
     }
 
     // Resolve paths relative to project root
     const projectRoot = process.cwd();
-    const distPath = join(__dirname, "../../dist");
+    const distPath = join(__dirname, "../../../dist");
     const targetPath = resolve(projectRoot, targetDir);
 
     // Create target directory if it doesn't exist
