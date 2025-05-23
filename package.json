@@ -11,8 +11,7 @@
     "url": "https://github.com/soranoo/payloadcms-typing-supercharge/issues"
   },
   "homepage": "https://github.com/soranoo/payloadcms-typing-supercharge#readme",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/src/index.ts",
   "files": [
     "dist"
   ],
@@ -21,7 +20,11 @@
   },
   "scripts": {
     "clean": "rimraf dist",
-    "build": "npm run clean && tsc && tsc-alias"
+    "copy-src:win": "xcopy /E /I /Y src dist && xcopy /E /I /Y dist\\build\\bin dist\\bin",
+    "copy-src:ci": "cp -r src/. dist && cp -r dist/build/bin dist",
+    "build": "tsc --outDir dist/build && tsc-alias",
+    "build:win": "npm run clean && npm run build && npm run copy-src:win",
+    "build:ci": "npm run clean && npm run build && npm run copy-src:ci"
   },
   "keywords": [
     "payloadcms",
@@ -40,5 +43,5 @@
     "tsc-alias": "^1.8.16",
     "typescript": "^5.8.3"
   },
-  "version": "1.4.4"
+  "version": "1.4.5-beta.9"
 }

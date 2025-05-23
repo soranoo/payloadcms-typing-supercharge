@@ -11,7 +11,7 @@ async function copyDist() {
 
     if (!targetDir) {
       console.error("Please specify a target directory");
-      console.error("Usage: copy-payload-types <target-directory>");
+      console.error("Usage: copy-payloadcms-typing-supercharge <target-directory>");
       process.exit(1);
     }
 
