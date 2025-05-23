@@ -17,7 +17,7 @@ import type {
 	DeepQuery,
 	Sort,
 	Where,
-} from "@/types";
+} from "../types";
 
 export type TypedTransformCollectionWithSelect<
 	TSlug extends CollectionSlug,

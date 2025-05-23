@@ -25,9 +25,10 @@
       }
     ],
     "paths": {
-      "@/*": [
-        "./src/*"
-      ],
+      //! NEVER USE ALIAS, UNLESS YOU FIX THE TypedPayload TYPING LOSS after build
+      // "@/*": [
+      //   "./src/*"
+      // ],
     },
     "target": "ES2022",
   },

@@ -197,6 +197,13 @@ You can add the following command to your `package.json` scripts section:
 
 Contributions are welcome! If you find a bug or have a feature request, please open an issue. If you want to contribute code, please fork the repository and submit a pull request.
 
+> [!NOTE]\
+> Due to the typing loss in the `TypedPayload` class after build process, the package will serve as the orginal typescript source code.\
+
+> [!NOTE]\
+> TypeScript aliases are not allowed in this project to prevent aliases mapping problem after file copy.\
+> So make sure to use the relative path for file imports.
+
 ## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details

@@ -23,7 +23,7 @@ import type {
 	TypedFindOptions,
 	TypedTransformCollectionWithSelect,
 	TypedUpdateManyOptions
-} from "@/types/typeds";
+} from "./types/typeds";
 
 export class TypedPayload {
 	constructor(private readonly payload: BasePayload) { }
