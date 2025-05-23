@@ -17,7 +17,7 @@
   ],
   "bin": {
     "copy-payloadcms-typing-supercharge": "./dist/bin/copy-dist.js"
-  },  
+  },
   "scripts": {
     "clean": "rimraf dist",
     "copy-src:win": "xcopy /E /I /Y src dist\\src",
@@ -42,5 +42,5 @@
     "tsc-alias": "^1.8.16",
     "typescript": "^5.8.3"
   },
-  "version": "1.4.5-beta.1"
+  "version": "1.4.5-beta.2"
 }
