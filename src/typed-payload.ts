@@ -28,8 +28,21 @@ import type {
 export class TypedPayload {
 	constructor(private readonly payload: BasePayload) { }
 
+	/**
+	 * @description Create a typed payload instance
+	 * @param payload - payload instance
+	 * @returns typed payload instance
+	 */
 	static createTypedPayload(payload: BasePayload): TypedPayload {
 		return new TypedPayload(payload);
+	}
+
+	/**
+	 * @description Returns the normal payload instance
+	 * @returns payload instance
+	 */
+	public get getPayload(): BasePayload {
+		return this.payload as BasePayload;
 	}
 
 	/**
