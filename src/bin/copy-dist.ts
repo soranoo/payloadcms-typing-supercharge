@@ -17,7 +17,7 @@ async function copyDist() {
 
     // Resolve paths relative to project root
     const projectRoot = process.cwd();
-    const distPath = join(__dirname, "../../../dist");
+    const distPath = join(__dirname, "../../dist");
     const targetPath = resolve(projectRoot, targetDir);
 
     // Create target directory if it doesn't exist
