@@ -29,6 +29,13 @@ PayloadCMS is a great headless CMS, but its default types can be enhanced to pro
   - `create`
   - `update` (byID and Bulk)
   - `delete` (byID and Bulk)
+- 🔍 **Type-Safe Types**: Support the following type:
+  - `AccessResult`
+  - `Access`
+  - `FilterOptionsFunc`
+  - `FilterOptions`
+  - `Sort`
+  - `Where`
 
 > [!CAUTION]\
 > ALL operations under `TypedPayload` are rootless by default, meaning `overrideAccess = false`.
@@ -176,6 +183,8 @@ This command will ensure the type definitions are properly available in your pro
 
 #### Suggested Command Approaches
 
+##### Approach 1
+
 You can add the following command to your `package.json` scripts section:
 
 ```json
@@ -191,9 +200,52 @@ You can add the following command to your `package.json` scripts section:
 > [!TIP]\
 > You can also put the copied `payloadcms-typing-supercharge` into .gitignore to avoid pushing it to the repository.
 
+##### Approach 2 (Recommended)
+
+Don't install the package as a dependency, but do the following.
+
+> [!TIP]\
+> Recommended to remove the package before doing this approach if you have installed it as a dependency.
+
+1. Add the following to your `package.json` scripts section:
+
+    ```json
+    {
+      // ...
+      "scripts": {
+        "payloadTyping@upgrade": "npx payloadcms-typing-supercharge packages/payloadcms-typing-supercharge",
+      },
+      // ...
+    }
+    ```
+
+2. Add the following to your `tsconfig.json` scripts section:
+
+    ```json
+    {
+      "compilerOptions": {
+        "paths": {
+          // ...
+          "payloadcms-typing-supercharge": [
+            "./packages/payloadcms-typing-supercharge/index.ts"
+          ],
+          "payloadcms-typing-supercharge/*": [
+            "./packages/payloadcms-typing-supercharge/*"
+          ],
+          // ...
+        },
+      },
+    }
+    ```
+
+3. Run `npm run payloadTyping@upgrade` to copy the files to your local directory.
+
+4. GOOD to go!
+
 ## ⭐ TODO
 
 - [ ] Optimise typed `Where` performance
+- [ ] Retype the WHOLE Payload `CollectionConfig`
 
 ## 🐛 Known Issues
 
@@ -207,7 +259,7 @@ Contributions are welcome! If you find a bug or have a feature request, please o
 > Due to the typing loss in the `TypedPayload` class after build process, the package will serve as the orginal typescript source code.\
 
 > [!NOTE]\
-> TypeScript aliases are not allowed in this project to prevent aliases mapping problem after file copy.\
+> TypeScript aliases are not allowed in this project to prevent aliases mapping problem after file copy.
 > So make sure to use the relative path for file imports.
 
 ## 📝 License
