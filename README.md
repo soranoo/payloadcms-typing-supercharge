@@ -2,21 +2,21 @@
 
 Project starts on 18-05-2025
 
-[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)&nbsp;&nbsp;&nbsp;[![Donation](https://img.shields.io/static/v1?label=Donation&message=❤️&style=social)](https://github.com/soranoo/Donation)
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE) [![npm version](https://img.shields.io/npm/v/payloadcms-typing-supercharge?color=red&style=flat)](https://www.npmjs.com/package/payloadcms-typing-supercharge) [![npm downloads](https://img.shields.io/npm/dt/payloadcms-typing-supercharge?color=blue&style=flat)](https://www.npmjs.com/package/payloadcms-typing-supercharge)&nbsp;&nbsp;&nbsp;[![Donation](https://img.shields.io/static/v1?label=Donation&message=❤️&style=social)](https://github.com/soranoo/Donation)
 
-[![npm version](https://img.shields.io/npm/v/payloadcms-typing-supercharge?color=red&style=flat)](https://www.npmjs.com/package/payloadcms-typing-supercharge) [![npm downloads](https://img.shields.io/npm/dt/payloadcms-typing-supercharge?color=blue&style=flat)](https://www.npmjs.com/package/payloadcms-typing-supercharge)
-
-This package provides strongly typed PayloadCMS types, enhancing the type safety and validation of your PayloadCMS queries and operations. It allows you to perform type-safe selections, where clauses, sort operations, and CRUD operations with strong type inference.
+This package provides strongly typed [PayloadCMS](https://payloadcms.com/) types, enhancing the type safety and validation of your PayloadCMS queries and operations. It allows you to perform type-safe selections, where clauses, sort operations, and CRUD operations with strong type inference.
 
 Give me a ⭐ if you like it.
 
 ## 🤔 Why this?
 
-PayloadCMS is a great headless CMS, but its default types can be enhanced to provide better type safety and validation. This package supercharges PayloadCMS with:
+[PayloadCMS](https://payloadcms.com/) is a great headless CMS, but its default types can be enhanced to provide better type safety and validation. This package supercharges PayloadCMS with:
 
 - Strong type inference for nested queries
 - Type-safe field selections
 - Enhanced type safety for CRUD operations
+
+IMHO, Payload claims to be type-safe, but not strong as I expected (ton of `any`...) Give me a ⭐ if you agree :p
 
 ## 🗝️ Features
 
@@ -58,19 +58,22 @@ Install the package using npm:
 npm install payloadcms-typing-supercharge
 ```
 
+>[!TIP]\
+>Read [troubleshooting](#-troubleshooting) before doing the dependency installation. You may find a better way to use the package.
+
 ### Usage 🎉
 
 1. First, import the `TypedPayload` class:
 
-```typescript
-import { TypedPayload } from 'payloadcms-typing-supercharge';
-```
+    ```typescript
+    import { TypedPayload } from 'payloadcms-typing-supercharge';
+    ```
 
 2. Create a type-safe PayloadCMS instance:
 
-```typescript
-const typedPayload = TypedPayload.createTypedPayload(payload);
-```
+    ```typescript
+    const typedPayload = TypedPayload.createTypedPayload(payload);
+    ```
 
 3. Enjoy type-safe operations! Here are some examples:
 
@@ -159,6 +162,33 @@ await typedPayload.find({
     ], 
 });
 ```
+
+#### Type-Safe Collection Config (WIP)
+
+```typescript
+import { createTypedCollectionConfig } from 'payloadcms-typing-supercharge';
+
+export const Users = createTypedCollectionConfig({
+  slug: 'users',
+  fields: [
+    {
+      name: 'name',
+      type: 'text',
+    },
+    {
+      name: 'profile',
+      type: 'relationship',
+      relationTo: 'profiles',
+    },
+  ],
+  access: { // ✅ Typed
+    //...
+  },
+});
+```
+
+>[!NOTE]\
+> Not all values in the `createTypedCollectionConfig` are type-safe right now.
 
 ## 🐛 Troubleshooting
 
@@ -256,7 +286,7 @@ Don't install the package as a dependency, but do the following.
 Contributions are welcome! If you find a bug or have a feature request, please open an issue. If you want to contribute code, please fork the repository and submit a pull request.
 
 > [!NOTE]\
-> Due to the typing loss in the `TypedPayload` class after build process, the package will serve as the orginal typescript source code.\
+> Due to the typing loss in the `TypedPayload` class after build process, the package will serve as the orginal typescript source code.
 
 > [!NOTE]\
 > TypeScript aliases are not allowed in this project to prevent aliases mapping problem after file copy.

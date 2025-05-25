@@ -3,3 +3,4 @@ export * from "./deep-query";
 export * from "./sort";
 export * from "./access";
 export * from "./filter-options";
+export * from "./collection-config";
