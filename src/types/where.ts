@@ -1,5 +1,5 @@
 import type { WhereField } from "payload";
-import type { MaxDepth, ObjectPaths } from "./object-path";
+import type { DefaultQueryMaxDepth, ObjectPaths } from "./object-path";
 import type { NonNullableObject } from "./non-nullable-object";
 
 /**
@@ -35,7 +35,7 @@ import type { NonNullableObject } from "./non-nullable-object";
  */
 // TODO: Fix the "Type instantiation is excessively deep and possibly infinite.ts(2589)"
 // @ts-expect-error - Pending fix
-export type Where<Obj, D extends number = MaxDepth> = {
+export type Where<Obj, D extends number = DefaultQueryMaxDepth> = {
 	[P in ObjectPaths<NonNullableObject<Obj>, D>]?: WhereField;
 } & {
 	and?: Where<Obj, D>[];

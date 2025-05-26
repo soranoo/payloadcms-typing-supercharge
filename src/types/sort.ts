@@ -1,5 +1,5 @@
 import type { NonNullableObject } from "./non-nullable-object";
-import type { MaxDepth, ObjectPaths } from "./object-path";
+import type { DefaultQueryMaxDepth, ObjectPaths } from "./object-path";
 
 /**
  * Sort<Obj, D> is a utility type that defines the valid sort keys for objects of type `Obj` up to a specified depth `D`.
@@ -29,7 +29,7 @@ import type { MaxDepth, ObjectPaths } from "./object-path";
  * // Multiple sort keys
  * const sort3: Sort<User> = ["name", "-profile.age"];
  */
-export type Sort<Obj, D extends number = MaxDepth> =
+export type Sort<Obj, D extends number = DefaultQueryMaxDepth> =
 	| ObjectPaths<NonNullableObject<Obj>, D>
 	// TODO: Fix: Type instantiation is excessively deep and possibly infinite.ts(2589)
 	// @ts-expect-error - Pending fix
