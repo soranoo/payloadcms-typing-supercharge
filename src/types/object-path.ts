@@ -11,14 +11,14 @@ type Prev<D extends number> = D extends 0
 		: never;
 
 // 2) MaxDepth default
-export type MaxDepth = 5;
+export type DefaultQueryMaxDepth = 5;
 
 // 3) ObjectPaths<T, D, P>
 //    - always emit the immediate key
 //    - recurse only when D > 0 and the type is a non-string object
 export type ObjectPaths<
 	T,
-	D extends number = MaxDepth,
+	D extends number = DefaultQueryMaxDepth,
 	P extends string = "",
 > = T extends object
 	? {

@@ -18,6 +18,7 @@ import type {
 	Sort,
 	Where,
 } from "../types";
+import type { DefaultQueryMaxDepth } from "./object-path";
 
 export type TypedTransformCollectionWithSelect<
 	TSlug extends CollectionSlug,
@@ -37,19 +38,21 @@ export interface TypedCreateOptions<
 export interface TypedCountOptions<
 	TSlug extends CollectionSlug,
 	TSelect extends SelectFromCollectionSlug<TSlug>,
+	TQueryDepth extends number = DefaultQueryMaxDepth,
 > extends Omit<CountOptions<TSlug>, "collection" | "where"> {
 	collection: TSlug;
-	where?: Where<TransformCollectionWithSelect<TSlug, TSelect>>;
+	where?: Where<TransformCollectionWithSelect<TSlug, TSelect>, TQueryDepth>;
 }
 
 export interface TypedFindOptions<
 	TSlug extends CollectionSlug,
 	TSelect extends SelectFromCollectionSlug<TSlug>,
 	TDepth extends number,
+	TQueryDepth extends number = DefaultQueryMaxDepth,
 > extends Omit<FindOptions<TSlug, TSelect>, "collection" | "where" | "sort" | "depth"> {
 	collection: TSlug;
-	where?: Where<TransformCollectionWithSelect<TSlug, TSelect>, TDepth>;
-	sort?: Sort<TransformCollectionWithSelect<TSlug, TSelect>, TDepth>;
+	where?: Where<TransformCollectionWithSelect<TSlug, TSelect>, TQueryDepth>;
+	sort?: Sort<TransformCollectionWithSelect<TSlug, TSelect>, TQueryDepth>;
 	depth?: TDepth;
 }
 
@@ -67,9 +70,11 @@ export interface TypedUpdateManyOptions<
 	TSlug extends CollectionSlug,
 	TSelect extends SelectFromCollectionSlug<TSlug>,
 	TDepth extends number,
-> extends Omit<UpdateManyOptions<TSlug, TSelect>, "collection" | "where" | "depth"> {
+	TQueryDepth extends number = DefaultQueryMaxDepth,
+> extends Omit<UpdateManyOptions<TSlug, TSelect>, "collection" | "where" | "depth" | "sort"> {
 	collection: TSlug;
-	where?: Where<TransformCollectionWithSelect<TSlug, TSelect>, TDepth>;
+	where?: Where<TransformCollectionWithSelect<TSlug, TSelect>, TQueryDepth>;
+	sort?: Sort<TransformCollectionWithSelect<TSlug, TSelect>, TQueryDepth>;
 	depth?: TDepth;
 }
 
@@ -77,9 +82,10 @@ export interface TypedDeleteManyOptions<
 	TSlug extends CollectionSlug,
 	TSelect extends SelectFromCollectionSlug<TSlug>,
 	TDepth extends number,
+	TQueryDepth extends number = DefaultQueryMaxDepth,
 > extends Omit<DeleteManyOptions<TSlug, TSelect>, "collection" | "where" | "depth"> {
 	collection: TSlug;
-	where?: Where<TransformCollectionWithSelect<TSlug, TSelect>, TDepth>;
+	where?: Where<TransformCollectionWithSelect<TSlug, TSelect>, TQueryDepth>;
 	depth?: TDepth;
 }
 
