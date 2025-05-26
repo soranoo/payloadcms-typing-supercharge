@@ -13,13 +13,17 @@ type Prev<D extends number> = BuildArray<D> extends [unknown, ...infer Rest]
 type AtZero<T> = {
 	[K in keyof T]: // Handle (string | object)[] | null | undefined
 	T[K] extends (string | object)[] | null | undefined
-	?
+	? Exclude<T[K], object[]> extends never // is it a pure object[]?
+	? T[K] // leave as-is if pure object[]
+	:
 	| string[]
 	| (null extends T[K] ? null : never)
 	| (undefined extends T[K] ? undefined : never)
 	: // Handle string | object | null | undefined
 	T[K] extends string | object | null | undefined
-	?
+	? Exclude<T[K], object> extends never // is it a pure object?
+	? T[K] // leave as-is if pure object
+	:
 	| string
 	| (null extends T[K] ? null : never)
 	| (undefined extends T[K] ? undefined : never)
@@ -71,8 +75,12 @@ type AtZero<T> = {
  * ```
  */
 export type DeepQuery<T, D extends number = 0> = D extends 0
+	? // If depth is 0, collapse any (string | object) to string
+	T extends string | object
 	? AtZero<T>
-	: {
+	: T
+	: // If depth is greater than 0, recurse into the object
+	{
 		[K in keyof T]: // Handle (string | object)[] | null | undefined
 		T[K] extends (string | object)[] | null | undefined
 		?
