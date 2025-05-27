@@ -81,7 +81,10 @@ export type DeepQuery<T, D extends number = 0> = D extends 0
 	: T
 	: // If depth is greater than 0, recurse into the object
 	{
-		[K in keyof T]: // Handle (string | object)[] | null | undefined
+		[K in keyof T]:
+		T[K] extends string
+		? T[K]
+		: // Handle (string | object)[] | null | undefined
 		T[K] extends (string | object)[] | null | undefined
 		?
 		| (Extract<T[K], unknown[]> extends infer Arr
