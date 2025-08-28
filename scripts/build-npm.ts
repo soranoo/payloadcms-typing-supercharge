@@ -1,25 +1,8 @@
 import { build, emptyDir } from "@deno/dnt";
 import pkg from "../deno.json" with { type: "json" }
+import { copyDir } from "@/utils/copy-dir.ts";
 
 const BASE_PATH = "./dist/npm";
-
-/**
- * Recursively copy all files and subfolders from src to dest.
- * @param src - Source directory path
- * @param dest - Destination directory path
- */
-const copyDir = (src: string, dest: string) => {
-  Deno.mkdirSync(dest, { recursive: true });
-  for (const entry of Deno.readDirSync(src)) {
-  const srcPath = `${src}/${entry.name}`;
-  const destPath = `${dest}/${entry.name}`;
-  if (entry.isFile) {
-    Deno.copyFileSync(srcPath, destPath);
-  } else if (entry.isDirectory) {
-    copyDir(srcPath, destPath);
-  }
-  }
-};
 
 await emptyDir(`${BASE_PATH}`);
 

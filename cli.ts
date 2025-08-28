@@ -5,6 +5,7 @@ import oxc from "oxc-parser";
 import { parseArgs as jsrParseArgs } from "jsr:@std/cli/parse-args";
 import { generateDepthInterfaces } from "@/depth-types-generator/index.ts";
 import { dirname, fromFileUrl, join } from "https://deno.land/std/path/mod.ts";
+import { copyDir } from "@/utils/copy-dir.ts";
 
 const AUTO_GENERATED_FILE_HEADER = [
 	"/**",
@@ -15,12 +16,12 @@ const AUTO_GENERATED_FILE_HEADER = [
 // Absolute path of the current file
 const currentFile = fromFileUrl(import.meta.url);
 const currentDir = dirname(currentFile);
-const copyDir = join(currentDir, "../../copy");
+const pkgCopyDir = join(currentDir, "../copy");
 
 
 type CliOptions = {
 	inFile: string;
-	outFile: string;
+	outDir: string;
 	maxDepth: number;
 	onlyNames?: string[];
 };
@@ -62,7 +63,7 @@ const parseArgs = (argv: string[]): CliOptions => {
 	}
 
 	const inFile = String(args.in);
-	const outFile = String(args.out);
+	const outDir = String(args.out);
 	const depthNum = Number.parseInt(String(args.depth), 10);
 	const maxDepth = Number.isFinite(depthNum) ? depthNum : 2;
 
@@ -72,7 +73,7 @@ const parseArgs = (argv: string[]): CliOptions => {
 		? namesRaw.split(",").map((s) => s.trim()).filter((s) => s.length > 0)
 		: undefined;
 
-	return { inFile, outFile, maxDepth, onlyNames };
+	return { inFile, outDir, maxDepth, onlyNames };
 };
 
 export const main = async () => {
@@ -87,19 +88,13 @@ export const main = async () => {
 		onlyNames: opts.onlyNames,
 	});
 
-	console.log({ currentFile, currentDir, copyDir });
+	console.log({ currentFile, currentDir, copyDir: pkgCopyDir });
 
 	// Copy and paste the files inside the copy folder to the output directory
-	for await (const entry of Deno.readDir(copyDir)) {
-		if (entry.isFile) {
-			const srcPath = join(copyDir, entry.name);
-			const destPath = join(opts.outFile, entry.name);
-			await Deno.copyFile(srcPath, destPath);
-		}
-	}
+	copyDir(pkgCopyDir, opts.outDir);
 
 	// Replace the <output-dir>/types/depth.ts
-	const targetFilePath = join(opts.outFile, "types/depth.ts");
+	const targetFilePath = join(opts.outDir, "types/depth.ts");
 	Deno.writeTextFileSync(targetFilePath, AUTO_GENERATED_FILE_HEADER + text);
 	console.log(`Wrote ${targetFilePath}`);
 };
