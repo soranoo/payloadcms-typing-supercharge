@@ -32,6 +32,7 @@ await build({
   },
   package: {
     // package.json properties
+    name: "payloadcms-typing-supercharge",
     description: pkg.description,
     license: pkg.license,
     author: pkg.author,
