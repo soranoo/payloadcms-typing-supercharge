@@ -15,8 +15,7 @@ const AUTO_GENERATED_FILE_HEADER = [
 // Absolute path of the current file
 const currentFile = fromFileUrl(import.meta.url);
 const currentDir = dirname(currentFile);
-const parentDir = dirname(currentDir);
-const copyDir = join(currentDir, "copy");
+const copyDir = join(currentDir, "../../copy");
 
 
 type CliOptions = {
@@ -88,7 +87,7 @@ export const main = async () => {
 		onlyNames: opts.onlyNames,
 	});
 
-	console.log({ currentFile, currentDir, parentDir, copyDir });
+	console.log({ currentFile, currentDir, copyDir });
 
 	// Copy and paste the files inside the copy folder to the output directory
 	for await (const entry of Deno.readDir(copyDir)) {
