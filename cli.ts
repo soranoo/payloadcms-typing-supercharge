@@ -16,6 +16,7 @@ const AUTO_GENERATED_FILE_HEADER = [
 // Absolute path of the current file
 const currentFile = fromFileUrl(import.meta.url);
 const currentDir = dirname(currentFile);
+const isInNodeModules = currentDir.includes("node_modules");
 const pkgCopyDir = join(currentDir, "../copy");
 
 
@@ -35,13 +36,12 @@ USAGE:
 
 OPTIONS:
 	-h, --help                 Show this help message
-			--in <file>            Input TypeScript file (default: ./sample/payload-types.ts)
-			--out <dir>           Output directory (default: ./export/payloadcms-typing-supercharge)
+			--in <file>            Input TypeScript file (default: ./src/payload-types.ts)
+			--out <dir>           Output directory (default: ./src/__generated__/payloadcms-typing-supercharge)
 			--depth <n>            Max depth to emit (0..n, default: 6)
 
 EXAMPLES:
-	deno run -A cli.ts --in ./sample/payload-types.ts --out ./export/payload-depth-types.ts --depth 2
-	deno run -A cli.ts --in ./sample/payload-types.ts --names Post,User
+	deno run -A cli.ts --in ./src/payload-types.ts --out ./src/__generated__/payloadcms-typing-supercharge --depth 6
 `);
 };
 
@@ -51,8 +51,8 @@ const parseArgs = (argv: string[]): CliOptions => {
 		boolean: ["help"],
 		alias: { h: "help" },
 		default: {
-			in: "./sample/payload-types.ts",
-			out: "./export/payload-depth-types.ts",
+			in: isInNodeModules ? "./src/payload-types.ts" : "./sample/payload-types.ts",
+			out: isInNodeModules ? "./src/__generated__/payloadcms-typing-supercharge" : "./export/payload-depth-types.ts",
 			depth: "6",
 		},
 	});
@@ -87,8 +87,6 @@ export const main = async () => {
 	const text = generateDepthInterfaces(result.program, opts.maxDepth, {
 		onlyNames: opts.onlyNames,
 	});
-
-	console.log({ currentFile, currentDir, copyDir: pkgCopyDir });
 
 	// Copy and paste the files inside the copy folder to the output directory
 	copyDir(pkgCopyDir, opts.outDir);

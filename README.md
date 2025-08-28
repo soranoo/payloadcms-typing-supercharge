@@ -58,8 +58,10 @@ Install the package using npm:
 npm install payloadcms-typing-supercharge
 ```
 
+Then you can use the CLI to generate types.
+
 >[!TIP]\
->Read [troubleshooting](#-troubleshooting) before doing the dependency installation. You may find a better way to use the package.
+>Read [CLI](#-cli) for more information on using the command line interface.
 
 ### Usage 🎉
 
@@ -190,87 +192,21 @@ export const Users = createTypedCollectionConfig({
 >[!NOTE]\
 > Not all values in the `createTypedCollectionConfig` are type-safe right now.
 
+## ⚡ CLI
+
+- `--in <path>`: The path of your `payload-types.ts`. Default: `./src/payload-types.ts`.
+- `--out <dir>`: Output directory to write types. Default: `./src/__generated__/payloadcms-typing-supercharge`.
+- `--depth <n>`: Max depth to emit (inclusive from 0..n). Default: `6`.
+
+Examples:
+
+```cmd
+payloadcms-typing-supercharge --in ./sample/payload-types.ts --out ./export --depth 2
+```
+
 ## 🐛 Troubleshooting
 
-### Type Generation Errors
-
-If you encounter an error like the following during payload type generation:
-
-```plaintext
-Error: ENOENT: no such file or directory, open '[path]/payloadcms-typing-supercharge/dist/types/index.js?namespace=xxxxxxxxx'
-```
-
-You can resolve this by using the `copy-payloadcms-typing-supercharge` command to copy the type definitions to your local directory:
-
-```bash
-copy-payloadcms-typing-supercharge ./payloadcms-typing-supercharge
-```
-
-This command will ensure the type definitions are properly available in your project.
-
->[!NOTE]\
-> Although you can customise the path to copy the type definitions to your local directory, it is recommended to use the same path as the package name to avoid changing the name of imports.
-
-#### Suggested Command Approaches
-
-##### Approach 1
-
-You can add the following command to your `package.json` scripts section:
-
-```json
-{
-  // ...
-  "scripts": {
-  "generate:types": "copy-payloadcms-typing-supercharge ./payloadcms-typing-supercharge && payload generate:types",
- },
-  // ...
-}
-```
-
-> [!TIP]\
-> You can also put the copied `payloadcms-typing-supercharge` into .gitignore to avoid pushing it to the repository.
-
-##### Approach 2 (Recommended)
-
-Don't install the package as a dependency, but do the following.
-
-> [!TIP]\
-> Recommended to remove the package before doing this approach if you have installed it as a dependency.
-
-1. Add the following to your `package.json` scripts section:
-
-    ```json
-    {
-      // ...
-      "scripts": {
-        "payloadTyping@upgrade": "npx payloadcms-typing-supercharge packages/payloadcms-typing-supercharge",
-      },
-      // ...
-    }
-    ```
-
-2. Add the following to your `tsconfig.json` scripts section:
-
-    ```json
-    {
-      "compilerOptions": {
-        "paths": {
-          // ...
-          "payloadcms-typing-supercharge": [
-            "./packages/payloadcms-typing-supercharge/index.ts"
-          ],
-          "payloadcms-typing-supercharge/*": [
-            "./packages/payloadcms-typing-supercharge/*"
-          ],
-          // ...
-        },
-      },
-    }
-    ```
-
-3. Run `npm run payloadTyping@upgrade` to copy the files to your local directory.
-
-4. GOOD to go!
+n/a
 
 ## ⭐ TODO
 
