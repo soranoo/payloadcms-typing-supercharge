@@ -33,6 +33,9 @@ jobs:
 
       - name: Build NPM package
         run: deno run build:npm
+        
+      - name: Edit First Release Version
+        run: sed -i 's/\( FIRST_RELEASE\) = "1.0.0"/\1 = "1.8.2"/' node_modules/semantic-release/lib/definitions/constants.js
 
       - name: Create Release
         if: github.event_name == 'push'
