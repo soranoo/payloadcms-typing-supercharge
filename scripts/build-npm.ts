@@ -32,20 +32,19 @@ await build({
   },
   package: {
     // package.json properties
-    name: pkg.name,
     description: pkg.description,
     license: pkg.license,
     author: pkg.author,
     bin: {
-      [pkg.name]: "./bin/cli.mjs",
+      "payloadcms-typing-supercharge": "./bin/cli.mjs",
     },
     keywords: ["type-safe", "payloadcms", "deno"],
     repository: {
       type: "git",
-      url: `git+https://github.com/soranoo/${pkg.name}.git`,
+      url: `git+https://github.com/soranoo/payloadcms-typing-supercharge.git`,
     },
     bugs: {
-      url: `https://github.com/soranoo/${pkg.name}/issues`,
+      url: `https://github.com/soranoo/payloadcms-typing-supercharge/issues`,
     },
   },
   postBuild() {
