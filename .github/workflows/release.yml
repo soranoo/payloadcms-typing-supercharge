@@ -39,10 +39,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: deno run semantic-release
+        run: deno run semantic-release --allow-env
 
       - name: Run Dry Release
         if: github.event_name == 'pull_request'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: deno run semantic-release --dry-run
+        run: deno run semantic-release --dry-run --allow-env
