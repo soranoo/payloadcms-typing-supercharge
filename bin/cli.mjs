@@ -1,5 +1,5 @@
 #!/usr/bin/env node
 
-import { cli } from "../dist/npm/esm/cli.js";
+import { main } from "../esm/cli.js";
 
-cli();
+main();

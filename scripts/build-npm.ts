@@ -54,9 +54,10 @@ await build({
     Deno.copyFileSync("README.md", `${BASE_PATH}/README.md`);
     Deno.copyFileSync(".npmignore", `${BASE_PATH}/.npmignore`);
     
-    // Ensure the copy directory exists before copying the file
+    Deno.mkdirSync(`${BASE_PATH}/bin`, { recursive: true });
+    copyDir("./bin", `${BASE_PATH}/bin`);
+
     Deno.mkdirSync(`${BASE_PATH}/copy`, { recursive: true });
-    // Copy all files from ./packages/general/src/ to ${BASE_PATH}/copy/
     copyDir("./packages/general/src", `${BASE_PATH}/copy`);
   },
 });
