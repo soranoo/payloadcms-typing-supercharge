@@ -189,7 +189,7 @@ const getCollectionsKeyToType = (program: unknown): Map<string, string> => {
       if (decl?.type === "TSInterfaceDeclaration") ifaceDecl = decl;
     }
     if (!ifaceDecl) continue;
-    const id = (ifaceDecl as { id?: NodeLike }).id;
+    const { id } = ifaceDecl as { id?: NodeLike };
     const name = id?.type === "Identifier"
       ? (id as { name?: string }).name
       : undefined;
@@ -198,7 +198,7 @@ const getCollectionsKeyToType = (program: unknown): Map<string, string> => {
     const members = (bodyNode as { body?: NodeLike[] })?.body ?? [];
     for (const m of members) {
       if (m.type !== "TSPropertySignature") continue;
-      const key = (m as { key?: NodeLike }).key;
+      const { key } = m as { key?: NodeLike };
       const keyName = (key?.type === "Identifier"
         ? (key as { name?: string }).name
         : (key as { value?: string })?.value) as string | undefined;
