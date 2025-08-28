@@ -1,5 +1,9 @@
 import { assertEquals } from "@std/assert";
-import { getProp, qualifiedNameToString, type NodeLike } from "@/depth-types-generator/ast-utils.ts";
+import {
+  getProp,
+  type NodeLike,
+  qualifiedNameToString,
+} from "@/depth-types-generator/ast-utils.ts";
 
 Deno.test("getProp safely reads existing and missing keys", () => {
   const obj = { a: 1, b: { c: 2 } } as const;

@@ -4,7 +4,7 @@
 import oxc from "oxc-parser";
 import { parseArgs as jsrParseArgs } from "jsr:@std/cli/parse-args";
 import { generateDepthInterfaces } from "@/depth-types-generator/index.ts";
-import { dirname, fromFileUrl, join } from "https://deno.land/std/path/mod.ts";
+import { dirname, fromFileUrl } from "https://deno.land/std/path/mod.ts";
 
 const AUTO_GENERATED_FILE_HEADER = [
 	"/**",

@@ -1,4 +1,4 @@
-import { getProp, qualifiedNameToString, type NodeLike } from "./ast-utils.ts";
+import { getProp, type NodeLike, qualifiedNameToString } from "./ast-utils.ts";
 
 /**
  * Depth-based type transformer
@@ -33,14 +33,18 @@ type InterfaceDecl = {
 const collectInterfaces = (program: unknown): Map<string, InterfaceDecl> => {
   const map = new Map<string, InterfaceDecl>();
   const bodyUnknown = (program as { body?: unknown } | undefined)?.body;
-  const stmts: NodeLike[] = Array.isArray(bodyUnknown) ? (bodyUnknown as NodeLike[]) : [];
+  const stmts: NodeLike[] = Array.isArray(bodyUnknown)
+    ? (bodyUnknown as NodeLike[])
+    : [];
   for (const stmt of stmts) {
     let ifaceDecl: NodeLike | null = null;
     const stmtType = getProp<string>(stmt, "type");
     if (stmtType === "TSInterfaceDeclaration") ifaceDecl = stmt;
     else if (stmtType === "ExportNamedDeclaration") {
       const decl = getProp<NodeLike>(stmt, "declaration");
-      if (getProp<string>(decl, "type") === "TSInterfaceDeclaration") ifaceDecl = decl ?? null;
+      if (getProp<string>(decl, "type") === "TSInterfaceDeclaration") {
+        ifaceDecl = decl ?? null;
+      }
     }
     if (!ifaceDecl) continue;
 
@@ -52,7 +56,8 @@ const collectInterfaces = (program: unknown): Map<string, InterfaceDecl> => {
     for (const m of mlist) {
       if (getProp<string>(m, "type") !== "TSPropertySignature") continue;
       const keyNode = getProp<NodeLike>(m, "key");
-      const keyName = getProp<string>(keyNode, "name") ?? (getProp<string>(keyNode, "value") ?? "<computed>");
+      const keyName = getProp<string>(keyNode, "name") ??
+        (getProp<string>(keyNode, "value") ?? "<computed>");
       const optional = Boolean(getProp<boolean>(m, "optional"));
       const typeAnnotation = getProp<NodeLike>(m, "typeAnnotation");
       const typeNode = getProp<NodeLike>(typeAnnotation, "typeAnnotation");
@@ -61,24 +66,35 @@ const collectInterfaces = (program: unknown): Map<string, InterfaceDecl> => {
     map.set(name, { name, members, node: ifaceDecl });
   }
   return map;
-}
+};
 
 /**
  * Collect names of referenced type identifiers under any type node.
  * Used by configuration parsing helpers.
  */
-const collectTypeRefNames = (node: NodeLike | undefined | null, out: Set<string>) => {
+const collectTypeRefNames = (
+  node: NodeLike | undefined | null,
+  out: Set<string>,
+) => {
   if (!node || typeof node !== "object") return;
   switch (node.type) {
     case "TSTypeReference": {
-      const name = qualifiedNameToString((node as { typeName?: NodeLike }).typeName);
+      const name = qualifiedNameToString(
+        (node as { typeName?: NodeLike }).typeName,
+      );
       if (name) out.add(name);
-      const targs = (node as { typeArguments?: { params?: NodeLike[] } }).typeArguments;
-      if (targs?.params) targs.params.forEach((p) => collectTypeRefNames(p, out));
+      const targs =
+        (node as { typeArguments?: { params?: NodeLike[] } }).typeArguments;
+      if (targs?.params) {
+        targs.params.forEach((p) => collectTypeRefNames(p, out));
+      }
       return;
     }
     case "TSArrayType":
-      return collectTypeRefNames((node as { elementType?: NodeLike }).elementType, out);
+      return collectTypeRefNames(
+        (node as { elementType?: NodeLike }).elementType,
+        out,
+      );
     case "TSUnionType":
     case "TSIntersectionType": {
       const arr = (node as { types?: NodeLike[] }).types ?? [];
@@ -86,11 +102,15 @@ const collectTypeRefNames = (node: NodeLike | undefined | null, out: Set<string>
       return;
     }
     case "TSParenthesizedType":
-      return collectTypeRefNames((node as { typeAnnotation?: NodeLike }).typeAnnotation, out);
+      return collectTypeRefNames(
+        (node as { typeAnnotation?: NodeLike }).typeAnnotation,
+        out,
+      );
     case "TSTypeLiteral": {
       const mems = (node as { members?: NodeLike[] }).members ?? [];
       for (const m of mems) {
-        const ta = (m as { typeAnnotation?: { typeAnnotation?: NodeLike } }).typeAnnotation?.typeAnnotation;
+        const ta = (m as { typeAnnotation?: { typeAnnotation?: NodeLike } })
+          .typeAnnotation?.typeAnnotation;
         collectTypeRefNames(ta, out);
       }
       return;
@@ -99,26 +119,33 @@ const collectTypeRefNames = (node: NodeLike | undefined | null, out: Set<string>
       for (const k of Object.keys(node)) {
         const v = (node as Record<string, unknown>)[k];
         if (v && typeof v === "object") {
-          if (Array.isArray(v)) v.forEach((it) => collectTypeRefNames(it as NodeLike, out));
-          else collectTypeRefNames(v as NodeLike, out);
+          if (Array.isArray(v)) {
+            v.forEach((it) => collectTypeRefNames(it as NodeLike, out));
+          } else collectTypeRefNames(v as NodeLike, out);
         }
       }
     }
   }
-}
+};
 
 /**
  * Find the first referenced type name under a type node, by walking common wrappers.
  */
-const findFirstTypeRefName = (node: NodeLike | undefined | null): string | undefined => {
+const findFirstTypeRefName = (
+  node: NodeLike | undefined | null,
+): string | undefined => {
   if (!node || typeof node !== "object") return undefined;
   switch (node.type) {
     case "TSTypeReference":
       return qualifiedNameToString((node as { typeName?: NodeLike }).typeName);
     case "TSArrayType":
-      return findFirstTypeRefName((node as { elementType?: NodeLike }).elementType);
+      return findFirstTypeRefName(
+        (node as { elementType?: NodeLike }).elementType,
+      );
     case "TSParenthesizedType":
-      return findFirstTypeRefName((node as { typeAnnotation?: NodeLike }).typeAnnotation);
+      return findFirstTypeRefName(
+        (node as { typeAnnotation?: NodeLike }).typeAnnotation,
+      );
     case "TSUnionType":
     case "TSIntersectionType": {
       const types = (node as { types?: NodeLike[] }).types ?? [];
@@ -131,7 +158,8 @@ const findFirstTypeRefName = (node: NodeLike | undefined | null): string | undef
     case "TSTypeLiteral": {
       const members = (node as { members?: NodeLike[] }).members ?? [];
       for (const m of members) {
-        const ta = (m as { typeAnnotation?: { typeAnnotation?: NodeLike } }).typeAnnotation?.typeAnnotation;
+        const ta = (m as { typeAnnotation?: { typeAnnotation?: NodeLike } })
+          .typeAnnotation?.typeAnnotation;
         const name = findFirstTypeRefName(ta as NodeLike);
         if (name) return name;
       }
@@ -140,7 +168,7 @@ const findFirstTypeRefName = (node: NodeLike | undefined | null): string | undef
     default:
       return undefined;
   }
-}
+};
 
 /**
 // removed getCollectionsTypeNames; we now always require Config.collections
@@ -151,7 +179,8 @@ const findFirstTypeRefName = (node: NodeLike | undefined | null): string | undef
  */
 const getCollectionsKeyToType = (program: unknown): Map<string, string> => {
   const map = new Map<string, string>();
-  const body = (program as { body?: NodeLike[] }).body ?? [] as unknown as NodeLike[];
+  const body = (program as { body?: NodeLike[] }).body ??
+    [] as unknown as NodeLike[];
   for (const stmt of body) {
     let ifaceDecl: NodeLike | null = null;
     if (stmt.type === "TSInterfaceDeclaration") ifaceDecl = stmt;
@@ -161,37 +190,54 @@ const getCollectionsKeyToType = (program: unknown): Map<string, string> => {
     }
     if (!ifaceDecl) continue;
     const id = (ifaceDecl as { id?: NodeLike }).id;
-    const name = id?.type === "Identifier" ? (id as { name?: string }).name : undefined;
+    const name = id?.type === "Identifier"
+      ? (id as { name?: string }).name
+      : undefined;
     if (name !== "Config") continue;
     const bodyNode = (ifaceDecl as { body?: NodeLike }).body;
     const members = (bodyNode as { body?: NodeLike[] })?.body ?? [];
     for (const m of members) {
       if (m.type !== "TSPropertySignature") continue;
       const key = (m as { key?: NodeLike }).key;
-      const keyName = (key?.type === "Identifier" ? (key as { name?: string }).name : (key as { value?: string })?.value) as string | undefined;
-      if (keyName !== "collections") continue;
-      const ta = (m as { typeAnnotation?: { typeAnnotation?: NodeLike } }).typeAnnotation?.typeAnnotation;
-      if (!ta || ta.type !== "TSTypeLiteral") return map;
+      const keyName = (key?.type === "Identifier"
+        ? (key as { name?: string }).name
+        : (key as { value?: string })?.value) as string | undefined;
+      if (keyName !== "collections") {
+        continue;
+      }
+      const ta = (m as { typeAnnotation?: { typeAnnotation?: NodeLike } })
+        .typeAnnotation?.typeAnnotation;
+      if (!ta || ta.type !== "TSTypeLiteral") {
+        return map;
+      }
       const cols = (ta as { members?: NodeLike[] }).members ?? [];
       for (const col of cols) {
-        if (col.type !== "TSPropertySignature") continue;
+        if (col.type !== "TSPropertySignature") {
+          continue;
+        }
         const ckey = (col as { key?: NodeLike }).key;
-        const ckeyName = (ckey?.type === "Identifier" ? (ckey as { name?: string }).name : (ckey as { value?: string })?.value) as string | undefined;
-        const cta = (col as { typeAnnotation?: { typeAnnotation?: NodeLike } }).typeAnnotation?.typeAnnotation;
+        const ckeyName = (ckey?.type === "Identifier"
+          ? (ckey as { name?: string }).name
+          : (ckey as { value?: string })?.value) as string | undefined;
+        const cta = (col as { typeAnnotation?: { typeAnnotation?: NodeLike } })
+          .typeAnnotation?.typeAnnotation;
         const tname = findFirstTypeRefName(cta as NodeLike);
-        if (ckeyName && tname) map.set(String(ckeyName), tname);
+        if (ckeyName && tname) {
+          map.set(String(ckeyName), tname);
+        }
       }
       return map;
     }
   }
   return map;
-}
+};
 
 /**
  * Render literal TS types (string/number/boolean literals) to source text.
  */
 const stringifyLiteralType = (node: NodeLike): string => {
-  const lit = (node as { literal?: NodeLike }).literal ?? (node as unknown as NodeLike);
+  const lit = (node as { literal?: NodeLike }).literal ??
+    (node as unknown as NodeLike);
   const litType = getProp<string>(lit, "type");
   if (litType === "StringLiteral") {
     const raw = getProp<string>(lit, "raw");
@@ -210,11 +256,13 @@ const stringifyLiteralType = (node: NodeLike): string => {
     return String(value);
   }
   const vAny = (lit as unknown as { value?: unknown }).value;
-  if (typeof vAny === "string") return `'${(vAny as string).replace(/'/g, "\\'")}'`;
+  if (typeof vAny === "string") {
+    return `'${(vAny as string).replace(/'/g, "\\'")}'`;
+  }
   if (typeof vAny === "number") return String(vAny);
   if (typeof vAny === "boolean") return String(vAny);
   return "unknown";
-}
+};
 
 /**
  * Flatten a union possibly nested within parentheses into a flat list of nodes.
@@ -231,16 +279,18 @@ const flattenUnionTypes = (node: NodeLike): NodeLike[] => {
     return inner ? flattenUnionTypes(inner) : [node];
   }
   return [node];
-}
+};
 
 /**
  * If the node is a TSTypeReference, return the qualified name as string.
  */
 const refName = (node: NodeLike | undefined): string | undefined => {
   if (!node) return undefined;
-  if (node.type === "TSTypeReference") return qualifiedNameToString((node as { typeName?: NodeLike }).typeName);
+  if (node.type === "TSTypeReference") {
+    return qualifiedNameToString((node as { typeName?: NodeLike }).typeName);
+  }
   return undefined;
-}
+};
 
 /**
  * Given flattened union parts, if the union looks like a relation of the form
@@ -248,14 +298,22 @@ const refName = (node: NodeLike | undefined): string | undefined => {
  * - depth 0 -> "string" (+ null/undefined if present)
  * - depth > 0 -> drop string, keep RefType as `<Name>_D{depth-1}` if available
  */
-const transformRelationUnionParts = (parts: NodeLike[], depth: number, ifaceMap: Map<string, InterfaceDecl>): string => {
+const transformRelationUnionParts = (
+  parts: NodeLike[],
+  depth: number,
+  ifaceMap: Map<string, InterfaceDecl>,
+): string => {
   const hasString = parts.some((p) => p.type === "TSStringKeyword");
   const hasNull = parts.some((p) => p.type === "TSNullKeyword");
   const hasUndefined = parts.some((p) => p.type === "TSUndefinedKeyword");
   const refParts = parts.filter((p) => p.type === "TSTypeReference");
   if (!(hasString && refParts.length > 0)) return "";
   if (depth <= 0) {
-    return ["string", hasNull ? "null" : undefined, hasUndefined ? "undefined" : undefined]
+    return [
+      "string",
+      hasNull ? "null" : undefined,
+      hasUndefined ? "undefined" : undefined,
+    ]
       .filter(Boolean)
       .join(" | ");
   }
@@ -271,7 +329,7 @@ const transformRelationUnionParts = (parts: NodeLike[], depth: number, ifaceMap:
   pieces.push(...uniqRefs);
   if (hasUndefined) pieces.push("undefined");
   return pieces.join(" | ");
-}
+};
 
 /**
  * Render an arbitrary TS type node into a string, applying depth rules.
@@ -282,7 +340,11 @@ const transformRelationUnionParts = (parts: NodeLike[], depth: number, ifaceMap:
  * - type literals (object types), preserving index signatures
  * - type references (by name)
  */
-const stringifyType = (node: NodeLike | undefined | null, depth: number, ifaceMap: Map<string, InterfaceDecl>): string => {
+const stringifyType = (
+  node: NodeLike | undefined | null,
+  depth: number,
+  ifaceMap: Map<string, InterfaceDecl>,
+): string => {
   if (!node) return "any";
   switch (node.type) {
     case "TSStringKeyword":
@@ -310,7 +372,9 @@ const stringifyType = (node: NodeLike | undefined | null, depth: number, ifaceMa
     case "TSArrayType": {
       const el = (node as { elementType?: NodeLike }).elementType;
       // Special collapse: (string | Ref)[] respecting depth; handle optional parentheses
-      if (el && (el.type === "TSUnionType" || el.type === "TSParenthesizedType")) {
+      if (
+        el && (el.type === "TSUnionType" || el.type === "TSParenthesizedType")
+      ) {
         const parts = flattenUnionTypes(el);
         const hasString = parts.some((p) => p.type === "TSStringKeyword");
         const refParts = parts.filter((p) => p.type === "TSTypeReference");
@@ -329,7 +393,9 @@ const stringifyType = (node: NodeLike | undefined | null, depth: number, ifaceMa
     }
     case "TSTupleType": {
       const els = (node as { elementTypes?: NodeLike[] }).elementTypes ?? [];
-      return `[${els.map((e) => stringifyType(e, depth, ifaceMap)).join(", ")}]`;
+      return `[${
+        els.map((e) => stringifyType(e, depth, ifaceMap)).join(", ")
+      }]`;
     }
     case "TSUnionType": {
       const parts = flattenUnionTypes(node);
@@ -341,19 +407,22 @@ const stringifyType = (node: NodeLike | undefined | null, depth: number, ifaceMa
       const parts = (node as { types?: NodeLike[] }).types ?? [];
       return parts.map((p) => stringifyType(p, depth, ifaceMap)).join(" & ");
     }
-  case "TSTypeLiteral": {
+    case "TSTypeLiteral": {
       const members = (node as { members?: NodeLike[] }).members ?? [];
       const props: string[] = [];
       for (const m of members) {
         const mtype = getProp<string>(m, "type");
         if (mtype === "TSPropertySignature") {
           const keyNode = getProp<NodeLike>(m, "key");
-          const keyName = getProp<string>(keyNode, "name") ?? (getProp<string>(keyNode, "value") ?? "<computed>");
+          const keyName = getProp<string>(keyNode, "name") ??
+            (getProp<string>(keyNode, "value") ?? "<computed>");
           const isOptional = Boolean(getProp<boolean>(m, "optional"));
           const ta = getProp<NodeLike>(m, "typeAnnotation");
           const tn = getProp<NodeLike>(ta, "typeAnnotation");
           const tStr = stringifyType(tn, depth, ifaceMap);
-          const safeKey = /^(\w|\$|_)+$/.test(String(keyName)) ? String(keyName) : JSON.stringify(String(keyName));
+          const safeKey = /^(\w|\$|_)+$/.test(String(keyName))
+            ? String(keyName)
+            : JSON.stringify(String(keyName));
           props.push(`${safeKey}${isOptional ? "?" : ""}: ${tStr};`);
         } else if (mtype === "TSIndexSignature") {
           // Index signature: { [k: SomeKeyType]: SomeValueType }
@@ -372,13 +441,15 @@ const stringifyType = (node: NodeLike | undefined | null, depth: number, ifaceMa
       return `{ ${props.join(" ")} }`;
     }
     case "TSTypeReference": {
-      const name = qualifiedNameToString((node as { typeName?: NodeLike }).typeName) || "unknown";
+      const name =
+        qualifiedNameToString((node as { typeName?: NodeLike }).typeName) ||
+        "unknown";
       return name;
     }
     default:
       return "any";
   }
-}
+};
 
 /**
  * Generate source text for all depth-variant interfaces and the DepthQuery<Name, D> helper.
@@ -389,7 +460,7 @@ const stringifyType = (node: NodeLike | undefined | null, depth: number, ifaceMa
 export const generateDepthInterfaces = (
   program: unknown,
   maxDepth = 2,
-  opts?: { onlyNames?: string[] }
+  opts?: { onlyNames?: string[] },
 ): string => {
   const ifaceMap = collectInterfaces(program);
   const out: string[] = [];
@@ -399,7 +470,9 @@ export const generateDepthInterfaces = (
   // Require Config.collections; select only referenced interfaces
   const keyToType = getCollectionsKeyToType(program);
   if (keyToType.size === 0) {
-    throw new Error("Missing Config with collections: please declare `interface Config { collections: { ... } }`");
+    throw new Error(
+      "Missing Config with collections: please declare `interface Config { collections: { ... } }`",
+    );
   }
   const selectedTypes = new Set(keyToType.values());
   let names = Array.from(ifaceMap.keys()).filter((n) => selectedTypes.has(n));
@@ -414,7 +487,9 @@ export const generateDepthInterfaces = (
       out.push(`export interface ${name} {`);
       for (const m of idecl.members) {
         const tStr = stringifyType(m.typeNode ?? null, d, ifaceMap);
-        const safeKey = /^(\w|\$|_)+$/.test(String(m.name)) ? m.name : JSON.stringify(m.name);
+        const safeKey = /^(\w|\$|_)+$/.test(String(m.name))
+          ? m.name
+          : JSON.stringify(m.name);
         out.push(`  ${safeKey}${m.optional ? "?" : ""}: ${tStr};`);
       }
       out.push("}\n");
@@ -435,8 +510,10 @@ export const generateDepthInterfaces = (
     }
     const nameUnion = keys.map((k) => `"${k}"`).join(" | ");
     out.push(
-      `export type DepthQuery<Name extends ${nameUnion}, D extends Depth> = {\n${lines.join("\n")}\n}[D];`
+      `export type DepthQuery<Name extends ${nameUnion}, D extends Depth> = {\n${
+        lines.join("\n")
+      }\n}[D];`,
     );
   }
   return out.join("\n");
-}
+};

@@ -12,7 +12,12 @@ Deno.test("generateInterfacePropertyReport picks optional/nullable/ref props", (
   const report = generateInterfacePropertyReport(res.program);
   const a = report.find((r) => r.interfaceName === "A");
   if (!a) throw new Error("missing A");
-  const props = a.properties.map((p) => ({ name: p.name, optional: p.optional, containsNull: p.containsNull, refs: p.referencedTypes }));
+  const props = a.properties.map((p) => ({
+    name: p.name,
+    optional: p.optional,
+    containsNull: p.containsNull,
+    refs: p.referencedTypes,
+  }));
   assertEquals(props, [
     { name: "name", optional: true, containsNull: true, refs: [] },
     { name: "user", optional: true, containsNull: false, refs: ["B"] },

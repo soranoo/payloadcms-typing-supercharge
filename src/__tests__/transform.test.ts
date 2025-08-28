@@ -29,7 +29,7 @@ Deno.test("generateDepthInterfaces applies depth to relations and preserves lite
   assertStringIncludes(out, "tags: ('x' | 'y')[];");
   // Depth helper exists and maps Bar by collection key name
   assertStringIncludes(out, "export type DepthQuery<");
-  assertStringIncludes(out, "Name extends \"bar\" ? Bar_D0");
+  assertStringIncludes(out, 'Name extends "bar" ? Bar_D0');
   // Independent Depth type is exported
   assertStringIncludes(out, "export type Depth = 0 | 1 | 2");
 

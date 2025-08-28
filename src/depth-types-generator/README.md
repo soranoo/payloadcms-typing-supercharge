@@ -22,19 +22,19 @@ Prerequisites: Deno 1.45+.
 - Generate from the sample config (collections only) and write to `export/payload-depth-types.ts`:
 
 ```cmd
- deno task cli --in ./sample/payload-types.ts --out ./export/payload-depth-types.ts
+deno task cli --in ./sample/payload-types.ts --out ./export/payload-depth-types.ts
 ```
 
 - Run tests:
 
 ```cmd
- deno task test
+deno task test
 ```
 
 - Dev mode (runs the same generation as above):
 
 ```cmd
- deno task dev
+deno task dev
 ```
 
 Notes:
@@ -52,7 +52,7 @@ Invoke the CLI with flags (see `deno.json` task `cli` or run directly):
 Examples:
 
 ```cmd
- deno run --allow-read --allow-write --allow-env --allow-ffi cli.ts --in ./sample/payload-types.ts --out ./export/payload-depth-types.ts --depth 2
+deno run --allow-read --allow-write --allow-env --allow-ffi cli.ts --in ./sample/payload-types.ts --out ./export/payload-depth-types.ts --depth 2
 ```
 
 ## Outputs
@@ -66,7 +66,10 @@ You can also call the generator from code.
 
 ```ts
 import oxc from "oxc-parser";
-import { generateDepthInterfaces, generateInterfacePropertyReport } from "./src/index.ts";
+import {
+  generateDepthInterfaces,
+  generateInterfacePropertyReport,
+} from "./src/index.ts";
 
 const filename = "./sample/payload-types.ts";
 const code = await Deno.readTextFile(filename);
@@ -101,7 +104,7 @@ const text = generateDepthInterfaces(program, 2, {
 - If you see native binding errors from `oxc-parser`, ensure you run with `--allow-env --allow-ffi` (tasks already do this):
 
 ```cmd
- deno test --allow-read --allow-env --allow-ffi
+deno test --allow-read --allow-env --allow-ffi
 ```
 
 - When using the CLI directly, include `--allow-read --allow-write --allow-env --allow-ffi`.
