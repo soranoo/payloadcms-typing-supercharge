@@ -22,21 +22,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Setup Deno environment
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
       - name: Install dependencies
-        run: npm install
+        run: deno install
 
       - name: Build NPM package
-        run: npm run build:ci
+        run: deno run build:npm
 
       - name: Create Release
         if: github.event_name == 'push'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npx semantic-release
+        run: deno run --allow-all semantic-release
 
-      - name: Dry Run Release
+      - name: Run Dry Release
         if: github.event_name == 'pull_request'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release --dry-run
+        run: deno run --allow-all semantic-release --dry-run

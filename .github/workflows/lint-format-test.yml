@@ -1,0 +1,46 @@
+name: Lint, Format, and Test
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v4
+
+      # Setup Deno environment
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Install Dependencies
+        run: deno install
+
+      # Check if the code is formatted according to Deno's default
+      # formatting conventions.
+      - name: Check Formatting
+        run: deno fmt --check
+
+      # Scan the code for syntax errors and style issues. If
+      # you want to use a custom linter configuration you can add a configuration file with --config 
+      - name: Run Linter
+        run: deno lint
+
+      - name: Run Tests
+        run: deno run test

@@ -1,0 +1,11 @@
+.github
+.dccache
+jest.config.d.ts
+jest.config.js
+tsconfig.json
+demos
+.prettierignore
+.prettierrc
+*.tests.*
+*.__tests__.*
+coverage

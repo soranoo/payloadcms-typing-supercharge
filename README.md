@@ -22,7 +22,7 @@ IMHO, Payload claims to be type-safe, but not strong as I expected (ton of `any`
 
 - ✨ **Type Safety Selection**: Type-safe selecting up to any specified depth, not more `string | {collection-object}` at the same time.
 - 🎯 **Where Clause Type Safety**: Enhanced type checking for query filters
-- 📊 **Sort Type Safety**: Type-safe sort operations with dot notation support
+- 📊 **Sort Type Safety**: Type-safe sorting operations with dot notation support
 - 🚀 **CRUD Operation Type Safety**: Support the following operations:
   - `find`
   - `findByID`
@@ -41,7 +41,7 @@ IMHO, Payload claims to be type-safe, but not strong as I expected (ton of `any`
 > ALL operations under `TypedPayload` are rootless by default, meaning `overrideAccess = false`.
 
 > [!NOTE]\
-> If you wanna to use root access by default, you can set `overrideAccess = true` in the constructor of `TypedPayload` class. eg. `const typedPayload = new TypedPayload(payload, { overrideAccess: true });`
+> If you want to use root access by default, you can set `overrideAccess = true` in the constructor of `TypedPayload` class. eg. `const typedPayload = new TypedPayload(payload, { overrideAccess: true });`
 
 ## 📦 Requirements
 
