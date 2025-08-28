@@ -75,7 +75,7 @@ const parseArgs = (argv: string[]): CliOptions => {
 	return { inFile, outFile, maxDepth, onlyNames };
 };
 
-const main = async () => {
+export const main = async () => {
 	const opts = parseArgs(Deno.args);
 	const code = await Deno.readTextFile(opts.inFile);
 	const result = oxc.parseSync(opts.inFile, code);
