@@ -13,18 +13,14 @@ import type {
 	SelectType,
 	TransformCollectionWithSelect,
 } from "payload";
-import type {
-	DeepQuery,
-	Sort,
-	Where,
-} from "../types";
+import type { Depth, DepthQuery } from "./depth";
+import type { Sort, Where } from ".";
 import type { DefaultQueryMaxDepth } from "./object-path";
 
 export type TypedTransformCollectionWithSelect<
 	TSlug extends CollectionSlug,
-	TSelect extends SelectFromCollectionSlug<TSlug>,
-	TDepth extends number,
-> = DeepQuery<TransformCollectionWithSelect<TSlug, TSelect>, TDepth>;
+	TDepth extends Depth,
+> = DepthQuery<TSlug, TDepth>;
 
 export interface TypedCreateOptions<
 	TSlug extends CollectionSlug,
@@ -49,7 +45,10 @@ export interface TypedFindOptions<
 	TSelect extends SelectFromCollectionSlug<TSlug>,
 	TDepth extends number,
 	TQueryDepth extends number = DefaultQueryMaxDepth,
-> extends Omit<FindOptions<TSlug, TSelect>, "collection" | "where" | "sort" | "depth"> {
+> extends Omit<
+		FindOptions<TSlug, TSelect>,
+		"collection" | "where" | "sort" | "depth"
+	> {
 	collection: TSlug;
 	where?: Where<TransformCollectionWithSelect<TSlug, TSelect>, TQueryDepth>;
 	sort?: Sort<TransformCollectionWithSelect<TSlug, TSelect>, TQueryDepth>;
@@ -61,7 +60,10 @@ export interface TypedFindByIDOptions<
 	TDisableErrors extends boolean,
 	TSelect extends SelectFromCollectionSlug<TSlug>,
 	TDepth extends number,
-> extends Omit<FindByIDOptions<TSlug, TDisableErrors, TSelect>, "collection" | "depth"> {
+> extends Omit<
+		FindByIDOptions<TSlug, TDisableErrors, TSelect>,
+		"collection" | "depth"
+	> {
 	collection: TSlug;
 	depth?: TDepth;
 }
@@ -71,7 +73,10 @@ export interface TypedUpdateManyOptions<
 	TSelect extends SelectFromCollectionSlug<TSlug>,
 	TDepth extends number,
 	TQueryDepth extends number = DefaultQueryMaxDepth,
-> extends Omit<UpdateManyOptions<TSlug, TSelect>, "collection" | "where" | "depth" | "sort"> {
+> extends Omit<
+		UpdateManyOptions<TSlug, TSelect>,
+		"collection" | "where" | "depth" | "sort"
+	> {
 	collection: TSlug;
 	where?: Where<TransformCollectionWithSelect<TSlug, TSelect>, TQueryDepth>;
 	sort?: Sort<TransformCollectionWithSelect<TSlug, TSelect>, TQueryDepth>;
@@ -83,7 +88,10 @@ export interface TypedDeleteManyOptions<
 	TSelect extends SelectFromCollectionSlug<TSlug>,
 	TDepth extends number,
 	TQueryDepth extends number = DefaultQueryMaxDepth,
-> extends Omit<DeleteManyOptions<TSlug, TSelect>, "collection" | "where" | "depth"> {
+> extends Omit<
+		DeleteManyOptions<TSlug, TSelect>,
+		"collection" | "where" | "depth"
+	> {
 	collection: TSlug;
 	where?: Where<TransformCollectionWithSelect<TSlug, TSelect>, TQueryDepth>;
 	depth?: TDepth;
@@ -92,7 +100,7 @@ export interface TypedDeleteManyOptions<
 export interface TypedBulkOperationResult<
 	TSlug extends CollectionSlug,
 	TSelect extends SelectType,
-	TDepth extends number,
+	TDepth extends Depth,
 > extends Omit<BulkOperationResult<TSlug, TSelect>, "docs"> {
-	docs: DeepQuery<TransformCollectionWithSelect<TSlug, TSelect>, TDepth>[];
+	docs: DepthQuery<TSlug, TDepth>[];
 }

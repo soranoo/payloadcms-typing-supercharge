@@ -1,3 +1,1 @@
-export * from "./types";
-export * from "./typed-payload";
-export * from "./type-collection-config";
+export * from "./depth-types-generator/index.ts";
