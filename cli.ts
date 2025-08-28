@@ -4,7 +4,7 @@
 import oxc from "oxc-parser";
 import { parseArgs as jsrParseArgs } from "jsr:@std/cli/parse-args";
 import { generateDepthInterfaces } from "@/depth-types-generator/index.ts";
-import { dirname, fromFileUrl } from "https://deno.land/std/path/mod.ts";
+import { dirname, fromFileUrl, join } from "https://deno.land/std/path/mod.ts";
 
 const AUTO_GENERATED_FILE_HEADER = [
 	"/**",
@@ -16,6 +16,7 @@ const AUTO_GENERATED_FILE_HEADER = [
 const currentFile = fromFileUrl(import.meta.url);
 const currentDir = dirname(currentFile);
 const parentDir = dirname(currentDir);
+const copyDir = join(currentDir, "copy");
 
 
 type CliOptions = {
@@ -87,10 +88,21 @@ export const main = async () => {
 		onlyNames: opts.onlyNames,
 	});
 
-	console.log({currentFile, currentDir, parentDir})
+	console.log({ currentFile, currentDir, parentDir, copyDir });
 
-	await Deno.writeTextFile(opts.outFile, AUTO_GENERATED_FILE_HEADER + text);
-	console.log(`Wrote ${opts.outFile}`);
+	// Copy and paste the files inside the copy folder to the output directory
+	for await (const entry of Deno.readDir(copyDir)) {
+		if (entry.isFile) {
+			const srcPath = join(copyDir, entry.name);
+			const destPath = join(opts.outFile, entry.name);
+			await Deno.copyFile(srcPath, destPath);
+		}
+	}
+
+	// Replace the <output-dir>/types/depth.ts
+	const targetFilePath = join(opts.outFile, "types/depth.ts");
+	Deno.writeTextFileSync(targetFilePath, AUTO_GENERATED_FILE_HEADER + text);
+	console.log(`Wrote ${targetFilePath}`);
 };
 
 if (import.meta.main) {

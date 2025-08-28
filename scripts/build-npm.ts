@@ -3,7 +3,11 @@ import pkg from "../deno.json" with { type: "json" }
 
 const BASE_PATH = "./dist/npm";
 
-// Recursively copy all files and subfolders from ./packages/general/src/ to ${BASE_PATH}/copy/
+/**
+ * Recursively copy all files and subfolders from src to dest.
+ * @param src - Source directory path
+ * @param dest - Destination directory path
+ */
 const copyDir = (src: string, dest: string) => {
   Deno.mkdirSync(dest, { recursive: true });
   for (const entry of Deno.readDirSync(src)) {
