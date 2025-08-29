@@ -1,5 +1,5 @@
 import { build, emptyDir } from "@deno/dnt";
-import pkg from "../deno.json" with { type: "json" }
+import pkg from "../deno.json" with { type: "json" };
 import { copyDir } from "@/utils/copy-dir.ts";
 
 const BASE_PATH = "./dist/npm";
@@ -40,7 +40,7 @@ await build({
     Deno.copyFileSync("LICENSE", `${BASE_PATH}/LICENSE`);
     Deno.copyFileSync("README.md", `${BASE_PATH}/README.md`);
     Deno.copyFileSync(".npmignore", `${BASE_PATH}/.npmignore`);
-    
+
     Deno.mkdirSync(`${BASE_PATH}/bin`, { recursive: true });
     copyDir("./bin", `${BASE_PATH}/bin`);
 

@@ -29,10 +29,11 @@
     "semiColons": true,
     "singleQuote": false,
     "proseWrap": "preserve",
-    "include": ["src/"],
+    "include": ["src/", "scripts/", "cli.ts", "dev.ts", "mod.ts"],
     "exclude": ["packages/"]
   },
   "lint": {
+    "include": ["src/", "scripts/", "cli.ts", "dev.ts", "mod.ts"],
     "exclude": ["packages/"]
   }
 }
