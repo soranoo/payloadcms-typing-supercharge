@@ -1,4 +1,4 @@
-# payloadcms-typing-supercharge
+# depth-types-generator
 
 Generate depth-aware TypeScript interfaces for Payload-like schemas, and report optional/nullable/reference properties directly from source code.
 
@@ -45,8 +45,8 @@ Notes:
 
 Invoke the CLI with flags (see `deno.json` task `cli` or run directly):
 
-- `--in <path>`: Input TypeScript file to parse. Default: `./sample/payload-types.ts`.
-- `--out <path>`: Output `.ts` file to write generated depth types. Default: `./export/payload-depth-types.ts`.
+- `--in <path>`: The path of your `payload-types.ts`. Default: `./src/payload-types.ts`.
+- `--out <dir>`: Output directory to write types. Default: `./src/__generated__/payloadcms-typing-supercharge`.
 - `--depth <n>`: Max depth to emit (inclusive from 0..n). Default: `6`.
 
 Examples:
@@ -75,13 +75,7 @@ const filename = "./sample/payload-types.ts";
 const code = await Deno.readTextFile(filename);
 const { program } = oxc.parseSync(filename, code);
 
-// Report (optional)
 const report = generateInterfacePropertyReport(program);
-
-// Depth types (collections only)
-const text = generateDepthInterfaces(program, 2, {
-  importFrom: "../sample/payload-types.ts",
-});
 ```
 
 ## How it works

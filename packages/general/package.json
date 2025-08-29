@@ -15,9 +15,6 @@
   "files": [
     "dist"
   ],
-  "bin": {
-    "copy-payloadcms-typing-supercharge": "./dist/bin/copy-dist.js"
-  },
   "scripts": {
     "clean": "rimraf dist",
     "copy-src:win": "xcopy /E /I /Y src dist && xcopy /E /I /Y dist\\build\\bin dist\\bin",
