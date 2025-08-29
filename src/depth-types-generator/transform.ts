@@ -630,10 +630,24 @@ const renderPropStepMapper = (
 };
 
 /**
- * Generate source text for all depth-variant interfaces and the DepthQuery<Name, D> helper.
+ * Generates TypeScript interfaces and helper types/functions for representing
+ * collection data at varying levels of "depth" (relation expansion) for Payload CMS.
  *
- * Options:
- * - onlyNames: limit generation to these interface names (must still be present in Config.collections)
+ * This function analyzes the provided program (typically a payload-types.ts),
+ * collects all relevant interfaces, and emits:
+ * - Depth union type (e.g., `export type Depth = 0 | 1 | 2`)
+ * - Per-collection depth interfaces (e.g., `Post_D0`, `Post_D1`, ...)
+ * - DepthQuery type for mapping collection slugs and depth levels to the correct interface
+ * - Runtime helpers for extracting IDs and pruning undefined values
+ * - Mapper functions for projecting data from higher to lower depth
+ * - Dispatcher for projecting any collection's data between depth levels
+ *
+ * @param program - The TypeScript program or AST containing collection interfaces.
+ * @param maxDepth - The maximum depth level to generate interfaces for (default: 2).
+ * @param opts - Optional configuration:
+ * @param opts.onlyNames - Restrict generation to specific interface names.
+ * @returns A string containing all generated TypeScript code.
+ * @throws If no collections are found in the program's Config interface.
  */
 export const generateDepthInterfaces = (
   program: unknown,
@@ -771,11 +785,22 @@ export const generateDepthInterfaces = (
       );
     }
     out.push(
-      `\nexport function projectDepth<TSlug extends DepthCollectionSlug, TFromDepth extends Depth, TToDepth extends Depth>(doc: DepthQuery<TSlug, TFromDepth>, slug: TSlug, from: TFromDepth, to: TToDepth): DepthQuery<TSlug, TToDepth> {\n` +
-        `  if (Number(to) > Number(from)) throw new Error("Can't project depth from a lower to a higher level");\n` +
-        `  if (Number(from) === Number(to)) return doc as DepthQuery<TSlug, TToDepth>;\n` +
-        `  switch (slug) {\n${slugCases.join("\n")}\n` +
+      [
+        `\n/**`,
+        `  * Project a document from one depth level to another.`,
+        `  * @param doc - The document to project.`,
+        `  * @param slug - The collection slug.`,
+        `  * @param from - The current depth level.`,
+        `  * @param to - The target depth level.`,
+        `  * @returns The projected document.`,
+        `  * @throws If the projection is invalid.`,
+        `  */`,
+        `export const projectDepth = <TSlug extends DepthCollectionSlug, TFromDepth extends Depth, TToDepth extends Depth>(doc: DepthQuery<TSlug, TFromDepth>, slug: TSlug, from: TFromDepth, to: TToDepth): DepthQuery<TSlug, TToDepth> => {`,
+        `  if (Number(to) > Number(from)) throw new Error("Can't project depth from a lower to a higher level");`,
+        `  if (Number(from) === Number(to)) return doc as DepthQuery<TSlug, TToDepth>;`,
+        `  switch (slug) {\n${slugCases.join("\n")}`,
         `    default: return doc as any;\n  }\n}\n`,
+      ].join("\n"),
     );
   }
   return out.join("\n");
