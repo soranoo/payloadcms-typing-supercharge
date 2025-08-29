@@ -501,7 +501,10 @@ const renderPropStepMapper = (
   // Array of relation union: (string | Ref)[]
   if (typeNode && typeNode.type === "TSArrayType") {
     const el = (typeNode as { elementType?: NodeLike }).elementType;
-    if (el && (el.type === "TSUnionType" || el.type === "TSParenthesizedType") && isRelationUnion(el)) {
+    if (
+      el && (el.type === "TSUnionType" || el.type === "TSParenthesizedType") &&
+      isRelationUnion(el)
+    ) {
       if (destDepth === 0) {
         return `(${srcExpr}) == null ? ${srcExpr} : ((${srcExpr}) as any[]).map(__getId)`;
       }
@@ -511,7 +514,9 @@ const renderPropStepMapper = (
       }
       const rname = pickFirstRefName(el);
       if (rname && ifaceMap.has(rname)) {
-        return `(${srcExpr}) == null ? ${srcExpr} : ((${srcExpr}) as any[]).map(v => map_${rname}_D${destDepth}_to_D${destDepth - 1}(v as any))`;
+        return `(${srcExpr}) == null ? ${srcExpr} : ((${srcExpr}) as any[]).map(v => map_${rname}_D${destDepth}_to_D${
+          destDepth - 1
+        }(v as any))`;
       }
       return srcExpr;
     }
@@ -522,30 +527,59 @@ const renderPropStepMapper = (
       for (const m of members) {
         if (getProp<string>(m, "type") !== "TSPropertySignature") continue;
         const keyNode = getProp<NodeLike>(m, "key");
-        const keyName = getProp<string>(keyNode, "name") ?? (getProp<string>(keyNode, "value") ?? "<computed>");
-        const safeKeyLiteral = /^(\w|\$|_)+$/.test(String(keyName)) ? String(keyName) : JSON.stringify(String(keyName));
-        const accessExpr = /^(\w|\$|_)+$/.test(String(keyName)) ? `v.${String(keyName)}` : `v[${JSON.stringify(String(keyName))}]`;
+        const keyName = getProp<string>(keyNode, "name") ??
+          (getProp<string>(keyNode, "value") ?? "<computed>");
+        const safeKeyLiteral = /^(\w|\$|_)+$/.test(String(keyName))
+          ? String(keyName)
+          : JSON.stringify(String(keyName));
+        const accessExpr = /^(\w|\$|_)+$/.test(String(keyName))
+          ? `v.${String(keyName)}`
+          : `v[${JSON.stringify(String(keyName))}]`;
         const ta = getProp<NodeLike>(m, "typeAnnotation");
         const tn = getProp<NodeLike>(ta, "typeAnnotation");
-        const mappedVal = renderPropStepMapper(tn ?? null, currentDepth, ifaceMap, accessExpr, true);
+        const mappedVal = renderPropStepMapper(
+          tn ?? null,
+          currentDepth,
+          ifaceMap,
+          accessExpr,
+          true,
+        );
         fieldLines.push(`          ${safeKeyLiteral}: ${mappedVal},`);
       }
-      return `(${srcExpr}) == null ? ${srcExpr} : ((${srcExpr}) as any[]).map(v => __pruneUndefined({\n${fieldLines.join("\n")}\n        }))`;
+      return `(${srcExpr}) == null ? ${srcExpr} : ((${srcExpr}) as any[]).map(v => __pruneUndefined({\n${
+        fieldLines.join("\n")
+      }\n        }))`;
     }
     // Not a relation union array; pass through
     return srcExpr;
   }
   // Unions that wrap a single non-null/undefined branch (e.g., T[] | null)
-  if (typeNode && (typeNode.type === "TSUnionType" || typeNode.type === "TSParenthesizedType")) {
+  if (
+    typeNode &&
+    (typeNode.type === "TSUnionType" || typeNode.type === "TSParenthesizedType")
+  ) {
     const parts = flattenUnionTypes(typeNode);
-    const nonNullish = parts.filter((p) => p.type !== "TSNullKeyword" && p.type !== "TSUndefinedKeyword");
+    const nonNullish = parts.filter((p) =>
+      p.type !== "TSNullKeyword" && p.type !== "TSUndefinedKeyword"
+    );
     if (nonNullish.length === 1) {
       // Delegate mapping to the inner non-null type; inner mappers already add null guarding
-      return renderPropStepMapper(nonNullish[0], currentDepth, ifaceMap, srcExpr, inlineCtx);
+      return renderPropStepMapper(
+        nonNullish[0],
+        currentDepth,
+        ifaceMap,
+        srcExpr,
+        inlineCtx,
+      );
     }
   }
   // Relation union: string | Ref
-  if (typeNode && (typeNode.type === "TSUnionType" || typeNode.type === "TSParenthesizedType") && isRelationUnion(typeNode)) {
+  if (
+    typeNode &&
+    (typeNode.type === "TSUnionType" ||
+      typeNode.type === "TSParenthesizedType") &&
+    isRelationUnion(typeNode)
+  ) {
     if (destDepth === 0) {
       return `(${srcExpr}) == null ? ${srcExpr} : __getId(${srcExpr})`;
     }
@@ -555,7 +589,9 @@ const renderPropStepMapper = (
     }
     const rname = pickFirstRefName(typeNode);
     if (rname && ifaceMap.has(rname)) {
-      return `(${srcExpr}) == null ? ${srcExpr} : map_${rname}_D${destDepth}_to_D${destDepth - 1}(${srcExpr} as any)`;
+      return `(${srcExpr}) == null ? ${srcExpr} : map_${rname}_D${destDepth}_to_D${
+        destDepth - 1
+      }(${srcExpr} as any)`;
     }
     return srcExpr;
   }
@@ -566,15 +602,28 @@ const renderPropStepMapper = (
     for (const m of members) {
       if (getProp<string>(m, "type") !== "TSPropertySignature") continue;
       const keyNode = getProp<NodeLike>(m, "key");
-      const keyName = getProp<string>(keyNode, "name") ?? (getProp<string>(keyNode, "value") ?? "<computed>");
-      const safeKeyLiteral = /^(\w|\$|_)+$/.test(String(keyName)) ? String(keyName) : JSON.stringify(String(keyName));
-      const accessExpr = /^(\w|\$|_)+$/.test(String(keyName)) ? `${srcExpr}.${String(keyName)}` : `${srcExpr}[${JSON.stringify(String(keyName))}]`;
+      const keyName = getProp<string>(keyNode, "name") ??
+        (getProp<string>(keyNode, "value") ?? "<computed>");
+      const safeKeyLiteral = /^(\w|\$|_)+$/.test(String(keyName))
+        ? String(keyName)
+        : JSON.stringify(String(keyName));
+      const accessExpr = /^(\w|\$|_)+$/.test(String(keyName))
+        ? `${srcExpr}.${String(keyName)}`
+        : `${srcExpr}[${JSON.stringify(String(keyName))}]`;
       const ta = getProp<NodeLike>(m, "typeAnnotation");
       const tn = getProp<NodeLike>(ta, "typeAnnotation");
-      const mappedVal = renderPropStepMapper(tn ?? null, currentDepth, ifaceMap, accessExpr, true);
+      const mappedVal = renderPropStepMapper(
+        tn ?? null,
+        currentDepth,
+        ifaceMap,
+        accessExpr,
+        true,
+      );
       fieldLines.push(`  ${safeKeyLiteral}: ${mappedVal},`);
     }
-    return `(${srcExpr}) == null ? ${srcExpr} : __pruneUndefined({\n${fieldLines.join("\n")}\n})`;
+    return `(${srcExpr}) == null ? ${srcExpr} : __pruneUndefined({\n${
+      fieldLines.join("\n")
+    }\n})`;
   }
   // Default: passthrough
   return srcExpr;
@@ -648,23 +697,23 @@ export const generateDepthInterfaces = (
     // Runtime helpers: __getId and per-interface mappers (Dn -> D{n-1})
     out.push(
       `\n// Helper to extract id from relation or pass through\n` +
-  `export const __getId = (v: any): any => (v == null ? v : (typeof v === "object" && v ? (v as any).id ?? v : v));\n` +
-  `// Deeply remove keys with undefined values from objects and arrays\n` +
-  `export const __pruneUndefined = (v: any): any => {\n` +
-  `  if (v == null) return v;\n` +
-  `  if (Array.isArray(v)) return v.map(__pruneUndefined);\n` +
-  `  if (typeof v === "object") {\n` +
-  `    const out: any = {};\n` +
-  `    for (const [k, val] of Object.entries(v)) {\n` +
-  `      if (val !== undefined) {\n` +
-  `        const pr = __pruneUndefined(val);\n` +
-  `        if (pr !== undefined) out[k] = pr;\n` +
-  `      }\n` +
-  `    }\n` +
-  `    return out;\n` +
-  `  }\n` +
-  `  return v;\n` +
-  `};\n`,
+        `export const __getId = (v: any): any => (v == null ? v : (typeof v === "object" && v ? (v as any).id ?? v : v));\n` +
+        `// Deeply remove keys with undefined values from objects and arrays\n` +
+        `export const __pruneUndefined = (v: any): any => {\n` +
+        `  if (v == null) return v;\n` +
+        `  if (Array.isArray(v)) return v.map(__pruneUndefined);\n` +
+        `  if (typeof v === "object") {\n` +
+        `    const out: any = {};\n` +
+        `    for (const [k, val] of Object.entries(v)) {\n` +
+        `      if (val !== undefined) {\n` +
+        `        const pr = __pruneUndefined(val);\n` +
+        `        if (pr !== undefined) out[k] = pr;\n` +
+        `      }\n` +
+        `    }\n` +
+        `    return out;\n` +
+        `  }\n` +
+        `  return v;\n` +
+        `};\n`,
     );
 
     // Generate per-interface step mappers
@@ -677,13 +726,24 @@ export const generateDepthInterfaces = (
         const fields: string[] = [];
         for (const m of idecl.members) {
           const key = String(m.name);
-          const safeKeyLiteral = /^(\w|\$|_)+$/.test(key) ? key : JSON.stringify(key);
-          const accessExpr = /^(\w|\$|_)+$/.test(key) ? `src.${key}` : `src[${JSON.stringify(key)}]`;
-          const expr = renderPropStepMapper(m.typeNode ?? null, d, ifaceMap, accessExpr);
+          const safeKeyLiteral = /^(\w|\$|_)+$/.test(key)
+            ? key
+            : JSON.stringify(key);
+          const accessExpr = /^(\w|\$|_)+$/.test(key)
+            ? `src.${key}`
+            : `src[${JSON.stringify(key)}]`;
+          const expr = renderPropStepMapper(
+            m.typeNode ?? null,
+            d,
+            ifaceMap,
+            accessExpr,
+          );
           fields.push(`  ${safeKeyLiteral}: ${expr},`);
         }
         out.push(
-          `\nexport const ${fnName} = (src: ${srcType}): ${dstType} => __pruneUndefined({\n${fields.join("\n")}\n}) as ${dstType};\n`,
+          `\nexport const ${fnName} = (src: ${srcType}): ${dstType} => __pruneUndefined({\n${
+            fields.join("\n")
+          }\n}) as ${dstType};\n`,
         );
       }
     }
@@ -697,13 +757,15 @@ export const generateDepthInterfaces = (
       lines.push(`        switch (k) {`);
       for (let k = 1; k <= maxDepth; k++) {
         lines.push(
-          `          case ${k}: cur = map_${typeName}_D${k}_to_D${k - 1}(cur as any); break;`,
+          `          case ${k}: cur = map_${typeName}_D${k}_to_D${
+            k - 1
+          }(cur as any); break;`,
         );
       }
       lines.push(`          default: break;`);
       lines.push(`        }`);
       lines.push(`      }`);
-  lines.push(`      return __pruneUndefined(cur) as any;`);
+      lines.push(`      return __pruneUndefined(cur) as any;`);
       slugCases.push(
         `    case ${JSON.stringify(slug)}: {\n${lines.join("\n")}\n    }`,
       );

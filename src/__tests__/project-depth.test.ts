@@ -40,7 +40,12 @@ Deno.test("__getId basic behavior", async () => {
 
 Deno.test("__pruneUndefined removes undefined deeply", async () => {
   const mod = await importGenerated();
-  const input = { a: 1, b: undefined, c: { d: undefined, e: 2 }, f: [1, undefined, { g: undefined, h: 3 }] };
+  const input = {
+    a: 1,
+    b: undefined,
+    c: { d: undefined, e: 2 },
+    f: [1, undefined, { g: undefined, h: 3 }],
+  };
   const pruned = mod.__pruneUndefined(input);
   // Implementation preserves array positions; only object keys are pruned
   assertEquals(pruned, { a: 1, c: { e: 2 }, f: [1, undefined, { h: 3 }] });
@@ -58,7 +63,9 @@ Deno.test("per-interface mapper maps D1 -> D0 for relations and prunes undefined
       { tenant: "t2", id: "rel2" },
     ],
   } as unknown;
-  const userD0 = mod.map_User_D1_to_D0(userD1 as unknown as ReturnType<typeof mod["map_User_D2_to_D1"]>);
+  const userD0 = mod.map_User_D1_to_D0(
+    userD1 as unknown as ReturnType<typeof mod["map_User_D2_to_D1"]>,
+  );
   // name should be pruned; nested relation inside inline object should collapse to string id at D0 (always strings)
   assertEquals(userD0, {
     id: "u1",
@@ -76,7 +83,11 @@ Deno.test("projectDepth maps Profile D2 -> D1 and D0 respecting inline object vs
   const profileD2 = {
     id: "p1",
     tenant: { id: "t1", label: "Tenant 1" },
-    owner: { id: "u1", name: "Ann", tenants: [{ tenant: { id: "t2", label: "T2" } }] },
+    owner: {
+      id: "u1",
+      name: "Ann",
+      tenants: [{ tenant: { id: "t2", label: "T2" } }],
+    },
     settings: { theme: "dark", nested: { id: "t3", label: "T3" } },
     list: [{ id: "t4", label: "T4" }],
   } as unknown;
