@@ -1,12 +1,6 @@
-import type {
-	SelectFromCollectionSlug,
-} from "node_modules/payload/dist/collections/config/types";
-import type {
-	ByIDOptions as DeleteByIDOptions,
-} from "node_modules/payload/dist/collections/operations/local/delete";
-import type {
-	ByIDOptions as UpdateByIDOptions,
-} from "node_modules/payload/dist/collections/operations/local/update";
+import type { SelectFromCollectionSlug } from "node_modules/payload/dist/collections/config/types";
+import type { ByIDOptions as DeleteByIDOptions } from "node_modules/payload/dist/collections/operations/local/delete";
+import type { ByIDOptions as UpdateByIDOptions } from "node_modules/payload/dist/collections/operations/local/update";
 import type {
 	ApplyDisableErrors,
 	BasePayload,
@@ -14,6 +8,8 @@ import type {
 	PaginatedDocs,
 	Payload,
 } from "payload";
+import type { Depth } from "./types";
+import type { DefaultQueryMaxDepth } from "./types/object-path";
 import type {
 	TypedBulkOperationResult,
 	TypedCountOptions,
@@ -22,9 +18,9 @@ import type {
 	TypedFindByIDOptions,
 	TypedFindOptions,
 	TypedTransformCollectionWithSelect,
-	TypedUpdateManyOptions
+	TypedUpdateByIDOptions,
+	TypedUpdateManyOptions,
 } from "./types/typeds";
-import type { DefaultQueryMaxDepth } from "./types/object-path";
 
 const defaultReturnMaxDepth = 1;
 /**
@@ -36,7 +32,7 @@ export class TypedPayload {
 	constructor(
 		public readonly payload: BasePayload,
 		public overrideAccess = false,
-	) { }
+	) {}
 
 	/**
 	 * @description Create a typed payload instance
@@ -45,9 +41,12 @@ export class TypedPayload {
 	 * @param options.overrideAccess - whether to override access, defaults to false
 	 * @returns typed payload instance
 	 */
-	static createTypedPayload(payload: BasePayload, options: {
-		overrideAccess?: boolean;
-	} = { overrideAccess: false }): TypedPayload {
+	static createTypedPayload(
+		payload: BasePayload,
+		options: {
+			overrideAccess?: boolean;
+		} = { overrideAccess: false },
+	): TypedPayload {
 		return new TypedPayload(payload, options.overrideAccess);
 	}
 
@@ -59,17 +58,22 @@ export class TypedPayload {
 	async create<
 		TSlug extends CollectionSlug,
 		TSelect extends SelectFromCollectionSlug<TSlug>,
-		TReturnDepth extends number = DefaultReturnMaxDepth,
+		TReturnDepth extends Depth,
 	>({
 		collection,
 		depth = defaultReturnMaxDepth as TReturnDepth,
 		overrideAccess = this.overrideAccess,
 		...options
 	}: TypedCreateOptions<TSlug, TSelect, TReturnDepth>): Promise<
-		TypedTransformCollectionWithSelect<TSlug, TSelect, TReturnDepth>
+		TypedTransformCollectionWithSelect<TSlug, TReturnDepth>
 	> {
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-		return (await this.payload.create({ depth, collection, overrideAccess, ...options })) as any;
+		return (await this.payload.create({
+			depth,
+			collection,
+			overrideAccess,
+			...options,
+		})) as any;
 	}
 
 	/**
@@ -80,12 +84,14 @@ export class TypedPayload {
 	async count<
 		TSlug extends CollectionSlug,
 		TSelect extends SelectFromCollectionSlug<TSlug>,
-		TQueryDepth extends number = DefaultQueryMaxDepth,
+		TQueryDepth extends Depth = DefaultQueryMaxDepth,
 	>({
 		collection,
 		overrideAccess = this.overrideAccess,
 		...options
-	}: TypedCountOptions<TSlug, TSelect, TQueryDepth>): ReturnType<Payload["count"]> {
+	}: TypedCountOptions<TSlug, TSelect, TQueryDepth>): ReturnType<
+		Payload["count"]
+	> {
 		return await this.payload.count({ collection, overrideAccess, ...options });
 	}
 
@@ -97,17 +103,15 @@ export class TypedPayload {
 	async find<
 		TSlug extends CollectionSlug,
 		TSelect extends SelectFromCollectionSlug<TSlug>,
-		TReturnDepth extends number = DefaultReturnMaxDepth,
-		TQueryDepth extends number = DefaultQueryMaxDepth,
+		TReturnDepth extends Depth = DefaultReturnMaxDepth,
+		TQueryDepth extends Depth = DefaultQueryMaxDepth,
 	>({
 		collection,
 		depth = defaultReturnMaxDepth as TReturnDepth,
 		overrideAccess = this.overrideAccess,
 		...options
 	}: TypedFindOptions<TSlug, TSelect, TReturnDepth, TQueryDepth>): Promise<
-		PaginatedDocs<
-			TypedTransformCollectionWithSelect<TSlug, TSelect, TReturnDepth>
-		>
+		PaginatedDocs<TypedTransformCollectionWithSelect<TSlug, TReturnDepth>>
 	> {
 		// @ts-expect-error - ignore default type error because of "where"
 		return await this.payload.find({
@@ -127,15 +131,20 @@ export class TypedPayload {
 		TSlug extends CollectionSlug,
 		TDisableErrors extends boolean,
 		TSelect extends SelectFromCollectionSlug<TSlug>,
-		TReturnDepth extends number = DefaultReturnMaxDepth,
+		TReturnDepth extends Depth,
 	>({
 		collection,
 		overrideAccess = this.overrideAccess,
 		depth = defaultReturnMaxDepth as TReturnDepth,
 		...options
-	}: TypedFindByIDOptions<TSlug, TDisableErrors, TSelect, TReturnDepth>): Promise<
+	}: TypedFindByIDOptions<
+		TSlug,
+		TDisableErrors,
+		TSelect,
+		TReturnDepth
+	>): Promise<
 		ApplyDisableErrors<
-			TypedTransformCollectionWithSelect<TSlug, TSelect, TReturnDepth>,
+			TypedTransformCollectionWithSelect<TSlug, TReturnDepth>,
 			TDisableErrors
 		>
 	> {
@@ -157,37 +166,39 @@ export class TypedPayload {
 		// bulk
 		TSlug extends CollectionSlug,
 		TSelect extends SelectFromCollectionSlug<TSlug>,
-		TReturnDepth extends number = DefaultReturnMaxDepth,
-		TQueryDepth extends number = DefaultQueryMaxDepth,
+		TReturnDepth extends Depth = DefaultReturnMaxDepth,
+		TQueryDepth extends Depth = DefaultQueryMaxDepth,
 	>(
 		options: TypedUpdateManyOptions<TSlug, TSelect, TReturnDepth, TQueryDepth>,
-	): Promise<TypedBulkOperationResult<
-		TSlug,
-		TSelect,
-		TReturnDepth
-	>
-	>;
+	): Promise<TypedBulkOperationResult<TSlug, TSelect, TReturnDepth>>;
 	async update<
 		// by ID
 		TSlug extends CollectionSlug,
 		TSelect extends SelectFromCollectionSlug<TSlug>,
-		TReturnDepth extends number = DefaultReturnMaxDepth,
+		TReturnDepth extends Depth = DefaultReturnMaxDepth,
 	>(
-		options: UpdateByIDOptions<TSlug, TSelect>,
-	): Promise<TypedTransformCollectionWithSelect<TSlug, TSelect, TReturnDepth>>;
+		options: TypedUpdateByIDOptions<TSlug, TSelect, TReturnDepth>,
+	): Promise<TypedTransformCollectionWithSelect<TSlug, TReturnDepth>>;
 	async update<
 		TSlug extends CollectionSlug,
 		TSelect extends SelectFromCollectionSlug<TSlug>,
-		TReturnDepth extends number = DefaultReturnMaxDepth,
+		TReturnDepth extends Depth = DefaultReturnMaxDepth,
 	>({
 		collection,
 		overrideAccess = this.overrideAccess,
 		depth = defaultReturnMaxDepth as TReturnDepth,
 		...options
-	}: (TypedUpdateManyOptions<TSlug, TSelect, TReturnDepth> | UpdateByIDOptions<TSlug, TSelect>)) {
+	}:
+		| TypedUpdateManyOptions<TSlug, TSelect, TReturnDepth>
+		| UpdateByIDOptions<TSlug, TSelect, TReturnDepth>) {
 		// @ts-expect-error - ignore default type error because of "where"
 		// biome-ignore lint/suspicious/noExplicitAny: ignore default typing
-		return await this.payload.update({ depth, collection, overrideAccess, ...options }) as any;
+		return (await this.payload.update({
+			depth,
+			collection,
+			overrideAccess,
+			...options,
+		})) as any;
 	}
 
 	/**
@@ -199,8 +210,8 @@ export class TypedPayload {
 		// bulk
 		TSlug extends CollectionSlug,
 		TSelect extends SelectFromCollectionSlug<TSlug>,
-		TReturnDepth extends number = DefaultReturnMaxDepth,
-		TQueryDepth extends number = DefaultQueryMaxDepth,
+		TReturnDepth extends Depth = DefaultReturnMaxDepth,
+		TQueryDepth extends Depth = DefaultQueryMaxDepth,
 	>(
 		options: TypedDeleteManyOptions<TSlug, TSelect, TReturnDepth, TQueryDepth>,
 	): Promise<TypedBulkOperationResult<TSlug, TSelect, TReturnDepth>>;
@@ -208,22 +219,29 @@ export class TypedPayload {
 		// by ID
 		TSlug extends CollectionSlug,
 		TSelect extends SelectFromCollectionSlug<TSlug>,
-		TReturnDepth extends number = DefaultReturnMaxDepth,
+		TReturnDepth extends Depth = DefaultReturnMaxDepth,
 	>(
 		options: DeleteByIDOptions<TSlug, TSelect>,
-	): Promise<TypedTransformCollectionWithSelect<TSlug, TSelect, TReturnDepth>>;
+	): Promise<TypedTransformCollectionWithSelect<TSlug, TReturnDepth>>;
 	async delete<
 		TSlug extends CollectionSlug,
 		TSelect extends SelectFromCollectionSlug<TSlug>,
-		TReturnDepth extends number = DefaultReturnMaxDepth,
+		TReturnDepth extends Depth = DefaultReturnMaxDepth,
 	>({
 		collection,
 		overrideAccess = this.overrideAccess,
-		depth = defaultReturnMaxDepth as TReturnDepth,	
+		depth = defaultReturnMaxDepth as TReturnDepth,
 		...options
-	}: (TypedDeleteManyOptions<TSlug, TSelect, TReturnDepth> | DeleteByIDOptions<TSlug, TSelect>)) {
+	}:
+		| TypedDeleteManyOptions<TSlug, TSelect, TReturnDepth>
+		| DeleteByIDOptions<TSlug, TSelect>) {
 		// @ts-expect-error - ignore default type error because of "where"
 		// biome-ignore lint/suspicious/noExplicitAny: ignore default typing
-		return await this.payload.delete({ depth, collection, overrideAccess, ...options }) as any;
+		return (await this.payload.delete({
+			depth,
+			collection,
+			overrideAccess,
+			...options,
+		})) as any;
 	}
 }
