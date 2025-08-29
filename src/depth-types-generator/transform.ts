@@ -452,6 +452,135 @@ const stringifyType = (
 };
 
 /**
+ * Helpers for generating runtime mapping functions (projecting Dn -> D{n-1}).
+ */
+const isRelationUnion = (node: NodeLike | undefined | null): boolean => {
+  if (!node) return false;
+  const parts = node.type === "TSParenthesizedType"
+    ? flattenUnionTypes((node as { typeAnnotation?: NodeLike }).typeAnnotation!)
+    : node.type === "TSUnionType"
+    ? flattenUnionTypes(node)
+    : [];
+  if (parts.length === 0) return false;
+  const hasString = parts.some((p) => p.type === "TSStringKeyword");
+  const hasRef = parts.some((p) => p.type === "TSTypeReference");
+  return hasString && hasRef;
+};
+
+const pickFirstRefName = (
+  node: NodeLike | undefined | null,
+): string | undefined => {
+  if (!node) return undefined;
+  const parts = node.type === "TSParenthesizedType"
+    ? flattenUnionTypes((node as { typeAnnotation?: NodeLike }).typeAnnotation!)
+    : node.type === "TSUnionType"
+    ? flattenUnionTypes(node)
+    : [];
+  for (const p of parts) {
+    if (p.type === "TSTypeReference") {
+      const nm = refName(p);
+      if (nm) return nm;
+    }
+  }
+  return undefined;
+};
+
+/**
+ * Render a JS expression that maps a single property from depth d -> d-1.
+ * `srcExpr` is the expression to read the source value (e.g. `src.user`).
+ */
+const renderPropStepMapper = (
+  typeNode: NodeLike | undefined | null,
+  currentDepth: number,
+  ifaceMap: Map<string, InterfaceDecl>,
+  srcExpr: string,
+  inlineCtx = false,
+): string => {
+  const destDepth = currentDepth - 1;
+  if (destDepth < 0) return srcExpr;
+  // Array of relation union: (string | Ref)[]
+  if (typeNode && typeNode.type === "TSArrayType") {
+    const el = (typeNode as { elementType?: NodeLike }).elementType;
+    if (el && (el.type === "TSUnionType" || el.type === "TSParenthesizedType") && isRelationUnion(el)) {
+      if (destDepth === 0) {
+        return `(${srcExpr}) == null ? ${srcExpr} : ((${srcExpr}) as any[]).map(__getId)`;
+      }
+      // If inside an inline object literal and we're mapping down to depth 1, collapse to IDs for nested relations
+      if (inlineCtx && destDepth === 1) {
+        return `(${srcExpr}) == null ? ${srcExpr} : ((${srcExpr}) as any[]).map(__getId)`;
+      }
+      const rname = pickFirstRefName(el);
+      if (rname && ifaceMap.has(rname)) {
+        return `(${srcExpr}) == null ? ${srcExpr} : ((${srcExpr}) as any[]).map(v => map_${rname}_D${destDepth}_to_D${destDepth - 1}(v as any))`;
+      }
+      return srcExpr;
+    }
+    // Array of object type literals: map each element field-by-field
+    if (el && el.type === "TSTypeLiteral") {
+      const members = (el as { members?: NodeLike[] }).members ?? [];
+      const fieldLines: string[] = [];
+      for (const m of members) {
+        if (getProp<string>(m, "type") !== "TSPropertySignature") continue;
+        const keyNode = getProp<NodeLike>(m, "key");
+        const keyName = getProp<string>(keyNode, "name") ?? (getProp<string>(keyNode, "value") ?? "<computed>");
+        const safeKeyLiteral = /^(\w|\$|_)+$/.test(String(keyName)) ? String(keyName) : JSON.stringify(String(keyName));
+        const accessExpr = /^(\w|\$|_)+$/.test(String(keyName)) ? `v.${String(keyName)}` : `v[${JSON.stringify(String(keyName))}]`;
+        const ta = getProp<NodeLike>(m, "typeAnnotation");
+        const tn = getProp<NodeLike>(ta, "typeAnnotation");
+        const mappedVal = renderPropStepMapper(tn ?? null, currentDepth, ifaceMap, accessExpr, true);
+        fieldLines.push(`          ${safeKeyLiteral}: ${mappedVal},`);
+      }
+      return `(${srcExpr}) == null ? ${srcExpr} : ((${srcExpr}) as any[]).map(v => __pruneUndefined({\n${fieldLines.join("\n")}\n        }))`;
+    }
+    // Not a relation union array; pass through
+    return srcExpr;
+  }
+  // Unions that wrap a single non-null/undefined branch (e.g., T[] | null)
+  if (typeNode && (typeNode.type === "TSUnionType" || typeNode.type === "TSParenthesizedType")) {
+    const parts = flattenUnionTypes(typeNode);
+    const nonNullish = parts.filter((p) => p.type !== "TSNullKeyword" && p.type !== "TSUndefinedKeyword");
+    if (nonNullish.length === 1) {
+      // Delegate mapping to the inner non-null type; inner mappers already add null guarding
+      return renderPropStepMapper(nonNullish[0], currentDepth, ifaceMap, srcExpr, inlineCtx);
+    }
+  }
+  // Relation union: string | Ref
+  if (typeNode && (typeNode.type === "TSUnionType" || typeNode.type === "TSParenthesizedType") && isRelationUnion(typeNode)) {
+    if (destDepth === 0) {
+      return `(${srcExpr}) == null ? ${srcExpr} : __getId(${srcExpr})`;
+    }
+    // Inside inline object literals, collapse nested relations to IDs when mapping to depth 1
+    if (inlineCtx && destDepth === 1) {
+      return `(${srcExpr}) == null ? ${srcExpr} : __getId(${srcExpr})`;
+    }
+    const rname = pickFirstRefName(typeNode);
+    if (rname && ifaceMap.has(rname)) {
+      return `(${srcExpr}) == null ? ${srcExpr} : map_${rname}_D${destDepth}_to_D${destDepth - 1}(${srcExpr} as any)`;
+    }
+    return srcExpr;
+  }
+  // Inline object type literal: map fields recursively
+  if (typeNode && typeNode.type === "TSTypeLiteral") {
+    const members = (typeNode as { members?: NodeLike[] }).members ?? [];
+    const fieldLines: string[] = [];
+    for (const m of members) {
+      if (getProp<string>(m, "type") !== "TSPropertySignature") continue;
+      const keyNode = getProp<NodeLike>(m, "key");
+      const keyName = getProp<string>(keyNode, "name") ?? (getProp<string>(keyNode, "value") ?? "<computed>");
+      const safeKeyLiteral = /^(\w|\$|_)+$/.test(String(keyName)) ? String(keyName) : JSON.stringify(String(keyName));
+      const accessExpr = /^(\w|\$|_)+$/.test(String(keyName)) ? `${srcExpr}.${String(keyName)}` : `${srcExpr}[${JSON.stringify(String(keyName))}]`;
+      const ta = getProp<NodeLike>(m, "typeAnnotation");
+      const tn = getProp<NodeLike>(ta, "typeAnnotation");
+      const mappedVal = renderPropStepMapper(tn ?? null, currentDepth, ifaceMap, accessExpr, true);
+      fieldLines.push(`  ${safeKeyLiteral}: ${mappedVal},`);
+    }
+    return `(${srcExpr}) == null ? ${srcExpr} : __pruneUndefined({\n${fieldLines.join("\n")}\n})`;
+  }
+  // Default: passthrough
+  return srcExpr;
+};
+
+/**
  * Generate source text for all depth-variant interfaces and the DepthQuery<Name, D> helper.
  *
  * Options:
@@ -509,10 +638,82 @@ export const generateDepthInterfaces = (
       lines.push(`  ${d}: ${mapping};`);
     }
     const nameUnion = keys.map((k) => `"${k}"`).join(" | ");
+    out.push(`export type DepthCollectionSlug = ${nameUnion};`);
     out.push(
-      `export type DepthQuery<Name extends ${nameUnion}, D extends Depth> = {\n${
+      `export type DepthQuery<Name extends DepthCollectionSlug, D extends Depth> = {\n${
         lines.join("\n")
       }\n}[D];`,
+    );
+
+    // Runtime helpers: __getId and per-interface mappers (Dn -> D{n-1})
+    out.push(
+      `\n// Helper to extract id from relation or pass through\n` +
+  `export const __getId = (v: any): any => (v == null ? v : (typeof v === "object" && v ? (v as any).id ?? v : v));\n` +
+  `// Deeply remove keys with undefined values from objects and arrays\n` +
+  `export const __pruneUndefined = (v: any): any => {\n` +
+  `  if (v == null) return v;\n` +
+  `  if (Array.isArray(v)) return v.map(__pruneUndefined);\n` +
+  `  if (typeof v === "object") {\n` +
+  `    const out: any = {};\n` +
+  `    for (const [k, val] of Object.entries(v)) {\n` +
+  `      if (val !== undefined) {\n` +
+  `        const pr = __pruneUndefined(val);\n` +
+  `        if (pr !== undefined) out[k] = pr;\n` +
+  `      }\n` +
+  `    }\n` +
+  `    return out;\n` +
+  `  }\n` +
+  `  return v;\n` +
+  `};\n`,
+    );
+
+    // Generate per-interface step mappers
+    for (const iname of names) {
+      const idecl = ifaceMap.get(iname)!;
+      for (let d = maxDepth; d >= 1; d--) {
+        const fnName = `map_${iname}_D${d}_to_D${d - 1}`;
+        const srcType = `${iname}_D${d}`;
+        const dstType = `${iname}_D${d - 1}`;
+        const fields: string[] = [];
+        for (const m of idecl.members) {
+          const key = String(m.name);
+          const safeKeyLiteral = /^(\w|\$|_)+$/.test(key) ? key : JSON.stringify(key);
+          const accessExpr = /^(\w|\$|_)+$/.test(key) ? `src.${key}` : `src[${JSON.stringify(key)}]`;
+          const expr = renderPropStepMapper(m.typeNode ?? null, d, ifaceMap, accessExpr);
+          fields.push(`  ${safeKeyLiteral}: ${expr},`);
+        }
+        out.push(
+          `\nexport const ${fnName} = (src: ${srcType}): ${dstType} => __pruneUndefined({\n${fields.join("\n")}\n}) as ${dstType};\n`,
+        );
+      }
+    }
+
+    // Generate projectDepth dispatcher for any collection slug
+    const slugCases: string[] = [];
+    for (const [slug, typeName] of keyToType.entries()) {
+      const lines: string[] = [];
+      lines.push(`      let cur: any = doc as any;`);
+      lines.push(`      for (let k = from; k > to; k--) {`);
+      lines.push(`        switch (k) {`);
+      for (let k = 1; k <= maxDepth; k++) {
+        lines.push(
+          `          case ${k}: cur = map_${typeName}_D${k}_to_D${k - 1}(cur as any); break;`,
+        );
+      }
+      lines.push(`          default: break;`);
+      lines.push(`        }`);
+      lines.push(`      }`);
+  lines.push(`      return __pruneUndefined(cur) as any;`);
+      slugCases.push(
+        `    case ${JSON.stringify(slug)}: {\n${lines.join("\n")}\n    }`,
+      );
+    }
+    out.push(
+      `\nexport function projectDepth<TSlug extends DepthCollectionSlug, TFromDepth extends Depth, TToDepth extends Depth>(doc: DepthQuery<TSlug, TFromDepth>, slug: TSlug, from: TFromDepth, to: TToDepth): DepthQuery<TSlug, TToDepth> {\n` +
+        `  if (Number(to) > Number(from)) throw new Error("Can't project depth from a lower to a higher level");\n` +
+        `  if (Number(from) === Number(to)) return doc as DepthQuery<TSlug, TToDepth>;\n` +
+        `  switch (slug) {\n${slugCases.join("\n")}\n` +
+        `    default: return doc as any;\n  }\n}\n`,
     );
   }
   return out.join("\n");
