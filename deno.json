@@ -33,7 +33,7 @@
     "exclude": ["packages/"]
   },
   "lint": {
-    "include": ["src/", "scripts/", "cli.ts", "dev.ts", "mod.ts"],
+    "include": ["src/", "scripts/", "cli.ts", "mod.ts"],
     "exclude": ["packages/"]
   }
 }
