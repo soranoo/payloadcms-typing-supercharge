@@ -1,13 +1,13 @@
 /**
- * A type that removes the `.doc` from the given string type `T`.
+ * A type that removes the `.docs` from the given string type `T`.
  * Mainly used to target "join" field in PayloadCMS.
  * 
  * @example
  * ```ts
- * type CleanedString = RemoveDoc<"example.doc.a.b.doc.c">; // "example.a.b.c"
+ * type CleanedString = RemoveDoc<"example.docs.a.b.docs.c">; // "example.a.b.c"
  * ```
  */
-export type RemoveDotDoc<T extends string> = T extends `${infer A}.doc${infer B}`
+export type RemoveDotDoc<T extends string> = T extends `${infer A}.docs${infer B}`
 	? RemoveDotDoc<`${A}${B}`>
 	: T;
 
