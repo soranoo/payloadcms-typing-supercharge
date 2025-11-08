@@ -1,3 +1,16 @@
+/**
+ * A type that removes the `.doc` from the given string type `T`.
+ * Mainly used to target "join" field in PayloadCMS.
+ * 
+ * @example
+ * ```ts
+ * type CleanedString = RemoveDoc<"example.doc.a.b.doc.c">; // "example.a.b.c"
+ * ```
+ */
+export type RemoveDotDoc<T extends string> = T extends `${infer A}.doc${infer B}`
+	? RemoveDotDoc<`${A}${B}`>
+	: T;
+
 // 1) Depth utilities, with Prev clamped to 0
 type BuildArray<
 	N extends number,
@@ -21,7 +34,7 @@ export type ObjectPaths<
 	D extends number = DefaultQueryMaxDepth,
 	P extends string = "",
 > = T extends object
-	? {
+	? RemoveDotDoc<{
 			[K in keyof T & (string | number)]:
 				| `${P}${K}`
 				| (
@@ -33,5 +46,5 @@ export type ObjectPaths<
 								? ObjectPaths<Exclude<T[K], string>, Prev<D>, `${P}${K}.`>
 								: never
 				);
-		}[keyof T & (string | number)]
+		}[keyof T & (string | number)]>
 	: never;
