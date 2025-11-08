@@ -168,7 +168,7 @@ await typedPayload.find({
 #### Type-Safe Collection Config (WIP)
 
 ```typescript
-import { createTypedCollectionConfig } from 'payloadcms-typing-supercharge';
+import { createTypedCollectionConfig } from './__generated__/payloadcms-typing-supercharge';
 
 export const Users = createTypedCollectionConfig({
   slug: 'users',
@@ -201,7 +201,7 @@ export const Users = createTypedCollectionConfig({
 Examples:
 
 ```cmd
-payloadcms-typing-supercharge --in ./sample/payload-types.ts --out ./export --depth 2
+payloadcms-typing-supercharge --in ./src/payload-types.ts --out ./src/__generated__/payloadcms-typing-supercharge --depth 2
 ```
 
 ## 🐛 Troubleshooting
