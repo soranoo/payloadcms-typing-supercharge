@@ -2,9 +2,9 @@
 // A small CLI wrapper around the library generator functions.
 
 import oxc from "oxc-parser";
-import { parseArgs as jsrParseArgs } from "jsr:@std/cli/parse-args";
+import { parseArgs as jsrParseArgs } from "@std/cli/parse-args";
 import { generateDepthInterfaces } from "@/depth-types-generator/index.ts";
-import { dirname, fromFileUrl, join } from "https://deno.land/std/path/mod.ts";
+import { dirname, fromFileUrl, join } from "@std/path";
 import { copyDir } from "@/utils/copy-dir.ts";
 
 const AUTO_GENERATED_FILE_HEADER = [
